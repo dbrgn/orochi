@@ -2,6 +2,7 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
+import time
 from string import Template
 
 import requests
@@ -76,5 +77,7 @@ track = data_track['set']['track']
 print('Now playing "{track[name]}" by "{track[performer]}"...'.format(track=track))
 mp = mpylayer.MPlayerControl()
 mp.loadfile(track['url'])
-mp.pause()  # Play track
-import ipdb; ipdb.set_trace()
+time.sleep(1)
+mp.pause()  # Start playback
+time.sleep(1)
+time.sleep(mp.length - 1)
