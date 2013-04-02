@@ -1,0 +1,2 @@
+requests==1.2.0
+mpylayer==0.2a1
