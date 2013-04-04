@@ -29,18 +29,18 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     # Setup / configuration
 
+    intro = 'Welcome! Type "help" for more information.'
+
+    prompt = '(8tracks)> '
+
     def preloop(self):
-        print('Hello')
         self.api = EightTracksAPI()
+        self.mix_ids = {}
         return super(Client, self).preloop()
 
     def precmd(self, line):
         self.console_width = int(os.popen('stty size', 'r').read().split()[1])
         return super(Client, self).precmd(line)
-
-    def postloop(self):
-        print('Goodbye')
-        return super(Client, self).postloop()
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
@@ -49,11 +49,17 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     # Actual commands
 
     def do_search(self, s):
-        print('Results for "{}":'.format(s))
         mixes = self.api.search_mix(s)
+
+        print('Results for "{}":'.format(s))
         wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
         mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m)')
+
+        self.mix_ids = {}
         for i, mix in enumerate(mixes, 1):
+            # Cache mix ids
+            self.mix_ids[i] = mix['id']
+            # Print line
             prefix = ' {0})'.format(i).ljust(5)
             hours = mix['duration'] // 60 // 60
             minutes = (mix['duration'] // 60) % 60
@@ -62,7 +68,26 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             print(prefix + wrapper.fill(mix_info))
 
     def help_search(self):
-        print('Search for a mix.')
+        print('Syntax: search <searchterm>')
+        print('Search for a mix. You can then play a mix with the "play" command.')
+
+    def do_play(self, s):
+        try:
+            mix_id = self.mix_ids[int(s)]
+        except ValueError:
+            print('Invalid mix number. Please run a search first and then '
+                  'specify a mix number to play.')
+            return
+        except KeyError:
+            print('Mix with number {i} not found. Did you run a search yet?'.format(i=s))
+            return
+
+        print('Playing mix {i} with id {id}...'.format(i=s, id=mix_id))
+        self.api.play_mix(mix_id)
+
+    def help_play(self):
+        print('Syntax: play <mix_number>')
+        print('Play the nth mix from the last search results.')
 
 
 if __name__ == '__main__':

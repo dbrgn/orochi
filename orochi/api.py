@@ -32,6 +32,8 @@ class EightTracksAPI(object):
             'X-Api-Version': 2,
             'Accept': 'application/json',
         })
+        self.play_token = None
+        self.current_track = None
 
     def _get(self, resource, params={}, **kwargs):
         """Do a GET request to the specified API resource.
@@ -71,6 +73,26 @@ class EightTracksAPI(object):
             raise APIError(data['errors'], data)
         return data
 
+    def _obtain_play_token(self, force_refresh=False):
+        """Return a new play token.
+
+        If a play token has already been requested before, this token is
+        returned, as long as ``force_refresh`` is ``False``.
+
+        Args:
+            force_refresh:
+                Whether to ignore a cached play token and force the requesting
+                of a new one. Default: False.
+
+        Returns:
+            A play token as a string.
+
+        """
+        if self.play_token is None or force_refresh:
+            data = self._get('sets/new.json')
+            self.play_token = data['play_token']
+        return self.play_token
+
     def search_mix(self, query, sort='hot', page=1, per_page=20):
         """Search for a mix.
 
@@ -97,25 +119,16 @@ class EightTracksAPI(object):
         })
         return data['mixes']
 
+    def play_mix(self, mix_id):
+        play_token = self._obtain_play_token()
+        data = self._get('sets/{token}/play.json'.format(token=play_token), {
+            'mix_id': mix_id,
+        })
+        self.current_track = data['set']['track']
+        print('Track url: ' + self.current_track['url'])
+        #Track: {u'performer': u'Yukon Blonde', u'name': u'Brides Song', u'url': u'https://dtp6gm33au72i.cloudfront.net/tf/000/796/'
 
 
-#
-#
-## Choose mix
-#
-#mix_id = int(raw_input('Please choose a mix: '))
-#mix = data_mixes['mixes'][mix_id - 1]
-#
-#
-## Obtain a play token
-#
-#r = requests.get(BASE_URL + 'sets/new.json', headers=HEADERS)
-#data_token = r.json()
-#assert data_token['errors'] is None
-#
-#play_token = data_token['play_token']
-#
-#
 ## Get song
 #
 #params = {'mix_id': mix['id']}
