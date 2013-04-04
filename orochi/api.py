@@ -3,10 +3,8 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 import os
 import sys
-import time
 
 import requests
-import mpylayer
 
 
 def env(key):
@@ -33,7 +31,6 @@ class EightTracksAPI(object):
             'Accept': 'application/json',
         })
         self.play_token = None
-        self.current_track = None
 
     def _get(self, resource, params={}, **kwargs):
         """Do a GET request to the specified API resource.
@@ -119,24 +116,99 @@ class EightTracksAPI(object):
         })
         return data['mixes']
 
-    def play_mix(self, mix_id):
+    def _playback_control(self, mix_id, command):
+        """Used to do play/next/skip requests.
+
+        Args:
+            mix_id:
+                The 8tracks mix id to start playing.
+            command:
+                The command to execute (play/next/skip).
+
+        Returns:
+            Information about the set, including track data.
+
+        """
         play_token = self._obtain_play_token()
-        data = self._get('sets/{token}/play.json'.format(token=play_token), {
+        resource = 'sets/{token}/{command}.json'.format(token=play_token, command=command)
+        data = self._get(resource, {
             'mix_id': mix_id,
         })
-        self.current_track = data['set']['track']
-        print('Track url: ' + self.current_track['url'])
-        #Track: {u'performer': u'Yukon Blonde', u'name': u'Brides Song', u'url': u'https://dtp6gm33au72i.cloudfront.net/tf/000/796/'
+        return data['set']
+
+    def play_mix(self, mix_id):
+        """Start a mix playback.
+
+        Args:
+            mix_id:
+                The 8tracks mix id to start playing.
+
+        Returns:
+            Information about the playing set, including track data.
+
+        """
+        return self._playback_control(mix_id, 'play')
+
+    def next_track(self, mix_id):
+        """Request the next track after a track has regularly finished playing.
+
+        If you want to skip a track, use ``skip_track`` instead.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+
+        Returns:
+            New set information, including track data.
+
+        """
+        return self._playback_control(mix_id, 'next')
+
+    def skip_track(self, mix_id):
+        """Skip a track.
+
+        Note that the caller has the responsibility to check whether the user
+        is allowed to skip a track or not.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+
+        Returns:
+            New set information, including track data.
+
+        """
+        return self._playback_control(mix_id, 'skip')
+
+    def report_track(self, mix_id, track_id):
+        """Report a track as played.
+
+        In order to be legal and pay royalties properly, 8tracks must report
+        every performance of every song played to SoundExchange. A
+        "performance" is counted when the 30 second mark of a song is reached.
+        So at 30 seconds, you must call this function.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+            track_id:
+                The id of the track to report.
+
+        Returns:
+            TODO
+
+        Raises:
+            TODO
+
+        """
+        play_token = self._obtain_play_token()
+        data = self._get('sets/{token}/report.json'.format(token=play_token), {
+            'mix_id': mix_id,
+            'track_id': track_id,
+        })
+        import ipdb; ipdb.set_trace()
 
 
-## Get song
-#
-#params = {'mix_id': mix['id']}
-#r = requests.get(BASE_URL + 'sets/{token}/play.json'.format(token=play_token), params=params, headers=HEADERS)
-#data_track = r.json()
-#track = data_track['set']['track']
-#
-#print('Now playing "{track[name]}" by "{track[performer]}"...'.format(track=track))
 #mp = mpylayer.MPlayerControl()
 #mp.loadfile(track['url'])
 #time.sleep(1)
