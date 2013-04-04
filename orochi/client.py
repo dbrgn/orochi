@@ -110,13 +110,13 @@ class PlayCommand(cmd.Cmd, object):
         r = super(PlayCommand, self).__init__(*args, **kwargs)
 
         # Initialize mplayer slave session with line buffer
-        self.p = Process(['mplayer', '-slave', '-quiet', '-idle'], bufsize=1)
+        self.p = Process(['mplayer', '-slave', '-quiet', '-idle', '-cache', '1024'], bufsize=1)
 
         # Play first track at max volume
         self.status = self.api.play_mix(mix_id)
         self._play(self.status['track']['url'])
         self.p.write('volume {} 1\n'.format(self.parent_cmd.volume))
-        self.do_status('')
+        self.do_status()
 
         return r
 
@@ -152,7 +152,7 @@ class PlayCommand(cmd.Cmd, object):
             if time.time() - start > LOADFILE_TIMEOUT:
                 raise RuntimeError("Playback didn't start inside {}s. ".format(LOADFILE_TIMEOUT) +
                         "Something must have gone wrong.", self.p.readerr())
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     def do_pause(self, s):
         self.p.write('pause\n')
@@ -169,6 +169,15 @@ class PlayCommand(cmd.Cmd, object):
     def help_stop(self):
         print('Stop the playback and exit play mode.')
 
+    def do_skip(self, s):
+        print('Skipping track...')
+        self.status = self.api.skip_track(self.mix_id)
+        self._play(self.status['track']['url'])
+        self.do_status()
+
+    def help_skip(self):
+        print('Skip the current song.')
+
     def do_volume(self, s):
         try:
             vol = int(s)
@@ -183,7 +192,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Syntax: volume <amount>')
         print('Change playback volume. The argument must be a number between 0 and 100.')
 
-    def do_status(self, s):
+    def do_status(self, s=''):
         track = self.status['track']
         print('Now playing "{0[name]}" by "{0[performer]}".'.format(track))
 
