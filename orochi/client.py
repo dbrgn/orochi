@@ -31,8 +31,6 @@ class CmdExitMixin(object):
 
     do_EOF = do_exit
     help_EOF = help_exit
-    do_quit = do_exit
-    help_quit = help_exit
 
 
 class Client(CmdExitMixin, cmd.Cmd, object):

@@ -20,11 +20,40 @@ Python).
 Usage
 -----
 
-::
+Install::
 
     $ pip install -r requirements.txt
+
+Start::
+
     $ export EIGHTTRACKS_API_KEY='your_api_key'    
     $ python -m orochi.client
+
+Available commands (main menu)::
+
+    search:
+        Syntax: search <searchterm>
+        Search for a mix. You can then play a mix with the "play" command.
+    play:
+        Syntax: play <mix_number>
+        Play the nth mix from the last search results.
+    exit:
+        Exit the interpreter.
+        You can also use the Ctrl-D shortcut.
+
+Available commands (play mode menu)::
+
+    pause:
+        Pause or resume the playback.
+    stop:
+        Stop the playback and exit play mode.
+    skip:
+        Skip the current song.
+    status:
+        Show the status of the currently playing song.
+    volume:
+        Syntax: volume <amount>
+        Change playback volume. The argument must be a number between 0 and 100.
 
 
 Coding Guidelines
