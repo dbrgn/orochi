@@ -16,6 +16,7 @@ Python).
 
     *Image courtesy of Gustavo Araujo*
 
+
 Usage
 -----
 
@@ -23,7 +24,15 @@ Usage
 
     $ pip install -r requirements.txt
     $ export EIGHTTRACKS_API_KEY='your_api_key'    
-    $ python client.py
+    $ python -m orochi.client
+
+
+Coding Guidelines
+-----------------
+
+PEP8 via `flake8 <https://pypi.python.org/pypi/flake8>`_ with max-line-width set
+to 99 and E126-E128 ignored.
+
 
 License
 -------
