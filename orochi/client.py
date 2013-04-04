@@ -77,18 +77,45 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         except ValueError:
             print('Invalid mix number. Please run a search first and then '
                   'specify a mix number to play.')
-            return
         except KeyError:
             print('Mix with number {i} not found. Did you run a search yet?'.format(i=s))
-            return
-
-        print('Playing mix {i} with id {id}...'.format(i=s, id=mix_id))
-        self.api.play_mix(mix_id)
+        else:
+            self.api.play_mix(mix_id)
+            i = PlayCommand(mix_id, self)
+            i.prompt = '{0}:{1})> '.format(self.prompt[:-3], mix_id)
+            i.cmdloop()
 
     def help_play(self):
         print('Syntax: play <mix_number>')
         print('Play the nth mix from the last search results.')
 
+
+class PlayCommand(cmd.Cmd, object):
+
+    def __init__(self, mix_id, parent_cmd, *args, **kwargs):
+        self.mix_id = mix_id
+        self.api = parent_cmd.api
+        r = super(PlayCommand, self).__init__(*args, **kwargs)
+        self.do_status('')
+        return r
+
+    def emptyline(self):
+        """Don't repeat last command on empty line."""
+        pass
+
+    def do_stop(self, s):
+        print('Stopping playback...')
+        return True
+
+    def help_stop(self):
+        print('Stop the playback and exit play mode.')
+
+    def do_status(self, s):
+        print('Now playing "{0[name]}" by "{0[performer]}".'.format(self.api.current_track))
+
+    def help_status(self):
+        print('Syntax: status')
+        print('Show the status of the currently playing song.')
 
 if __name__ == '__main__':
     client = Client()
