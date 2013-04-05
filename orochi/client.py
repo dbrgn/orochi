@@ -44,7 +44,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def preloop(self):
         self.api = EightTracksAPI()
         self.mix_ids = {}
-        self.volume = 100
+        self.volume = None
         return super(Client, self).preloop()
 
     def precmd(self, line):
@@ -110,10 +110,11 @@ class PlayCommand(cmd.Cmd, object):
         # Initialize mplayer slave session with line buffer
         self.p = Process(['mplayer', '-slave', '-quiet', '-idle', '-cache', '1024'], bufsize=1)
 
-        # Play first track at max volume
+        # Play first track
         self.status = self.api.play_mix(mix_id)
         self._play(self.status['track']['url'])
-        self.p.write('volume {} 1\n'.format(self.parent_cmd.volume))
+        if self.parent_cmd.volume is not None:
+            self.p.write('volume {} 1\n'.format(self.parent_cmd.volume))
         self.do_status()
 
         return r
