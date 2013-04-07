@@ -174,6 +174,12 @@ class EightTracksAPI(object):
             mix_id:
                 The currently playing 8tracks mix id.
 
+        Raises:
+            requests.exceptions.HTTPError:
+                Raised if the request fails or if it returns a non-200 status
+                code. This is the case when the skipping limit has been
+                exceeded.
+
         Returns:
             New set information, including track data.
 

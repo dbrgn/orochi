@@ -3,19 +3,11 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 import os
 import cmd
-import time
 from string import Template
 from textwrap import TextWrapper
-try:
-    from shlex import quote
-except ImportError:  # Python < 3.3
-    from pipes import quote
 
 from .api import EightTracksAPI
-from .asyncproc import Process
-
-
-LOADFILE_TIMEOUT = 6
+from .player import MPlayer
 
 
 class CmdExitMixin(object):
@@ -107,14 +99,13 @@ class PlayCommand(cmd.Cmd, object):
 
         r = super(PlayCommand, self).__init__(*args, **kwargs)
 
-        # Initialize mplayer slave session with line buffer
-        self.p = Process(['mplayer', '-slave', '-quiet', '-idle', '-cache', '1024'], bufsize=1)
+        self.p = MPlayer()
 
         # Play first track
         self.status = self.api.play_mix(mix_id)
-        self._play(self.status['track']['url'])
+        self.p.load(self.status['track']['url'])
         if self.parent_cmd.volume is not None:
-            self.p.write('volume {} 1\n'.format(self.parent_cmd.volume))
+            self.p.volume(self.parent_cmd.volume)
         self.do_status()
 
         return r
@@ -123,45 +114,15 @@ class PlayCommand(cmd.Cmd, object):
         """Don't repeat last command on empty line."""
         pass
 
-    def _play(self, url):
-        """Play the specified file using mplayer's ``loadfile`` and wait for
-        the command to finish.
-
-        Args:
-            url:
-                The URL of the file to play.
-
-        Raises:
-            RuntimeError:
-                Raised if the loadfile command didn't return inside
-                `LOADFILE_TIMEOUT` seconds. This is done by checking the
-                subprocess' stdout for `Starting playback...`. The second
-                argument to RuntimeError is mplayer's stdout.
-
-        """
-        if url.startswith('https'):
-            url = 'http' + url[5:]
-        self.p.write('loadfile {}\n'.format(quote(url)))
-
-        # Wait for loadfile command to finish
-        start = time.time()
-        while 1:
-            if self.p.read().endswith('Starting playback...\n'):
-                break
-            if time.time() - start > LOADFILE_TIMEOUT:
-                raise RuntimeError("Playback didn't start inside {}s. ".format(LOADFILE_TIMEOUT) +
-                        "Something must have gone wrong.", self.p.readerr())
-            time.sleep(0.1)
-
     def do_pause(self, s):
-        self.p.write('pause\n')
+        self.p.playpause()
 
     def help_pause(self):
         print('Pause or resume the playback.')
 
     def do_stop(self, s):
         print('Stopping playback...')
-        self.p.write('stop\n')
+        self.p.stop()
         self.p.terminate()
         return True
 
@@ -170,8 +131,9 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_skip(self, s):
         print('Skipping track...')
+        # TODO check if skipping is allowed
         self.status = self.api.skip_track(self.mix_id)
-        self._play(self.status['track']['url'])
+        self.p.load(self.status['track']['url'])
         self.do_status()
 
     def help_skip(self):
@@ -179,13 +141,11 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_volume(self, s):
         try:
-            vol = int(s)
-            assert 0 <= vol <= 100
-        except (ValueError, AssertionError):
+            self.p.volume(s)
+        except ValueError:
             print('*** ValueError: Argument must be a number between 0 and 100.')
         else:
-            self.parent_cmd.volume = vol
-            self.p.write('volume {} 1\n'.format(vol))
+            self.parent_cmd.volume = int(s)
 
     def help_volume(self):
         print('Syntax: volume <amount>')
