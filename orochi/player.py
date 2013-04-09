@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import os
 import time
+import signal
+import threading
 try:
     from shlex import quote
 except ImportError:  # Python < 3.3
@@ -35,7 +38,6 @@ class MPlayer(object):
                 The number of seconds to wait for a command to finish. Default: 6.
 
         """
-        print('initializing...')
         self.timeout = timeout
         self.p = Process(['mplayer',
             '-slave', '-idle',
@@ -43,6 +45,35 @@ class MPlayer(object):
             '-input', 'nodefault-bindings',
             '-cache', '1024',
         ], bufsize=1)
+        self.write_lock = threading.Lock()
+
+    def _send_command(self, command, *args):
+        """Send a command to mplayer's stdin in a thread safe way. The function
+        handles all necessary locking and automatically handles line breaks and
+        string formatting.
+
+        Args:
+            command:
+                The basic mplayer command, like "pause" or "loadfile", without
+                a newline character.  This can contain new-style string
+                formatting syntax like ``{}``.
+            *args:
+                Provide as many formatting arguments as you like. They are
+                automatically ``quote()``d for security and passed to the
+                string formatting function (printf-style).
+
+        """
+        with self.write_lock:
+            safe_args = [quote(str(arg)) for arg in args]
+            self.p.write(command.format(*safe_args) + '\n')
+
+    def _stop_background_thread(self, blocking=True):
+        """Abort the background thread by setting the ``self.t_stop`` event. If
+        ``blocking`` is set, wait for it to finish."""
+        if self.t.is_alive():
+            self.t_stop.set()
+            if blocking:
+                self.t.join()
 
     def load(self, path):
         """Load a file and play it.
@@ -52,27 +83,46 @@ class MPlayer(object):
                 The path (url or filepath) to the file which should be played.
 
         """
+        # Fix https URLs, which are not supported by mplayer
         if path.startswith('https:'):
             path = 'http:' + path[6:]
-        self.p.write('loadfile {}\n'.format(quote(path)))
-        # Wait for loadfile command to finish
+
+        # Stop previously started background threads
+        self._stop_background_thread()
+
+        # Load file, wait for command to finish
+        self._send_command('loadfile {}', path)
         start = time.time()
         while 1:
             if 'CPLAYER: Starting playback...' in self.p.read():
                 break
-            if time.time() - start > self.timeout:
+            if time.time() - start > self.timeout:  # TODO use sigalarm or sigusr2 instead
                 self.terminate()
                 raise RuntimeError("Playback didn't start inside {}s. ".format(self.timeout) +
                         "Something must have gone wrong.", self.p.readerr())
             time.sleep(0.1)
 
+        # Start a background thread that checks for end of playback
+        def wait_for_finish(process, stop_event):
+            """Poll mplayer process for song ending. When it ends, send a
+            SIGUSR1 signal. Abort when stop_event is set."""
+            while not stop_event.is_set():
+                if 'GLOBAL: EOF code: 1' in self.p.read():
+                    os.kill(os.getpid(), signal.SIGUSR1)
+                stop_event.wait(0.5)
+        self.t_stop = threading.Event()
+        self.t = threading.Thread(target=wait_for_finish, args=(self.p, self.t_stop))
+        self.t.daemon = True
+        self.t.start()
+
     def playpause(self):
         """Pause or resume the playback of a song."""
-        self.p.write('pause\n')
+        self._send_command('pause')
 
     def stop(self):
         """Stop playback."""
-        self.p.write('stop\n')
+        self._send_command('stop')
+        self._stop_background_thread()
 
     def volume(self, amount):
         """Set the playback volume to ``amount`` percent.
@@ -91,13 +141,14 @@ class MPlayer(object):
             assert 0 <= amount <= 100
         except (ValueError, AssertionError):
             raise ValueError('``amount`` must be a number between 0 and 100.')
-        self.p.write('volume {} 1\n'.format(amount))
+        self._send_command('volume {} 1', amount)
 
     def terminate(self):
         """Shut down mplayer and replace the reference to the async process
         with a dummy instance that raises a :class:`RuntimeError` on any method
         call."""
         if hasattr(self.p, 'terminate'):
+            self._stop_background_thread()
             self.p.terminate()
             self.p = TerminatedException()
 

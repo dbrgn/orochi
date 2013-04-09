@@ -3,6 +3,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 import os
 import cmd
+import signal
 from string import Template
 from textwrap import TextWrapper
 
@@ -67,6 +68,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             mix_info = mix_info_tpl.substitute(name=mix['name'],
                     trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
             print(prefix + wrapper.fill(mix_info))
+            print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
     def help_search(self):
         print('Syntax: search <searchterm>')
@@ -92,6 +94,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
 class PlayCommand(cmd.Cmd, object):
 
+    # Setup / configuration
+
     def __init__(self, mix_id, parent_cmd, *args, **kwargs):
         self.mix_id = mix_id
         self.parent_cmd = parent_cmd
@@ -99,7 +103,11 @@ class PlayCommand(cmd.Cmd, object):
 
         r = super(PlayCommand, self).__init__(*args, **kwargs)
 
+        # Initialize mplayer
         self.p = MPlayer()
+
+        # Register signal handler for SIGUSR1
+        signal.signal(signal.SIGUSR1, self._song_end_handler)
 
         # Play first track
         self.status = self.api.play_mix(mix_id)
@@ -114,6 +122,18 @@ class PlayCommand(cmd.Cmd, object):
         """Don't repeat last command on empty line."""
         pass
 
+    # Helper methods
+
+    def _song_end_handler(self, signum, frame):
+        """Signal handler for SIGUSR1. Advance to the next track, if
+        available."""
+        print('Song has ended!')
+        self.status = self.api.next_track(self.mix_id)
+        self.p.load(self.status['track']['url'])
+        self.do_status()
+
+    # Actual commands
+
     def do_pause(self, s):
         self.p.playpause()
 
@@ -122,8 +142,15 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_stop(self, s):
         print('Stopping playback...')
+
+        # Reset signal handling for SIGUSR1
+        signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+
+        # Stop playback, terminate mplayer
         self.p.stop()
         self.p.terminate()
+
+        # Return to main loop
         return True
 
     def help_stop(self):
