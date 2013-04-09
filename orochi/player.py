@@ -45,6 +45,7 @@ class MPlayer(object):
             '-input', 'nodefault-bindings',
             '-cache', '1024',
         ], bufsize=1)
+        self.t = None
         self.write_lock = threading.Lock()
 
     def _send_command(self, command, *args):
@@ -70,7 +71,7 @@ class MPlayer(object):
     def _stop_background_thread(self, blocking=True):
         """Abort the background thread by setting the ``self.t_stop`` event. If
         ``blocking`` is set, wait for it to finish."""
-        if self.t.is_alive():
+        if self.t is not None and self.t.is_alive():
             self.t_stop.set()
             if blocking:
                 self.t.join()
