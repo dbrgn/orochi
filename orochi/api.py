@@ -90,7 +90,7 @@ class EightTracksAPI(object):
             self.play_token = data['play_token']
         return self.play_token
 
-    def search_mix(self, query, sort='hot', page=1, per_page=20):
+    def search_mix(self, query, sort='hot', page=1, per_page=10):
         """Search for a mix.
 
         Args:
@@ -103,7 +103,7 @@ class EightTracksAPI(object):
                 Which result page to return, if more than ``per_page`` are
                 found.
             per_page:
-                How many mixes to return per page. Default: 20.
+                How many mixes to return per page. Default: 10.
 
         Returns:
             The list of matching mixes.
@@ -213,11 +213,3 @@ class EightTracksAPI(object):
             'track_id': track_id,
         })
         import ipdb; ipdb.set_trace()
-
-
-#mp = mpylayer.MPlayerControl()
-#mp.loadfile(track['url'])
-#time.sleep(1)
-#mp.pause()  # Start playback
-#time.sleep(1)
-#time.sleep(mp.length - 1)
