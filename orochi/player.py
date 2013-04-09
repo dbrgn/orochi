@@ -2,6 +2,7 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
+import re
 import time
 import signal
 import threading
@@ -103,16 +104,32 @@ class MPlayer(object):
                         "Something must have gone wrong.", self.p.readerr())
             time.sleep(0.1)
 
-        # Start a background thread that checks for end of playback
-        def wait_for_finish(process, stop_event):
-            """Poll mplayer process for song ending. When it ends, send a
-            SIGUSR1 signal. Abort when stop_event is set."""
+        # Start a background thread that checks the playback status
+        def playback_status(process, stop_event, write_lock):
+            """Poll mplayer process for time_pos song and ending.
+
+            When song has ended, send a SIGUSR1 signal. When time_pos is larger
+            than 30s, send a SIGUSR2 signal to report the song.
+
+            When ``stop_event`` is set, exit thread.
+
+            """
+            reported = False
             while not stop_event.is_set():
-                if 'GLOBAL: EOF code: 1' in self.p.read():
+                if not reported:
+                    with write_lock:
+                        process.write('get_time_pos\n')
+                stdout = process.read()
+                if 'GLOBAL: EOF code: 1' in stdout:
                     os.kill(os.getpid(), signal.SIGUSR1)
+                match = re.search(r'GLOBAL: ANS_TIME_POSITION=([0-9]+\.[0-9]+)', stdout)
+                if not reported and match and float(match.groups()[0]) >= 30:
+                    os.kill(os.getpid(), signal.SIGUSR2)
+                    reported = True
                 stop_event.wait(0.5)
         self.t_stop = threading.Event()
-        self.t = threading.Thread(target=wait_for_finish, args=(self.p, self.t_stop))
+        thread_args = (self.p, self.t_stop, self.write_lock)
+        self.t = threading.Thread(target=playback_status, args=thread_args)
         self.t.daemon = True
         self.t.start()
 

@@ -106,8 +106,9 @@ class PlayCommand(cmd.Cmd, object):
         # Initialize mplayer
         self.p = MPlayer()
 
-        # Register signal handler for SIGUSR1
+        # Register signal handlers
         signal.signal(signal.SIGUSR1, self._song_end_handler)
+        signal.signal(signal.SIGUSR2, self._song_report_handler)
 
         # Play first track
         self.status = self.api.play_mix(mix_id)
@@ -132,6 +133,11 @@ class PlayCommand(cmd.Cmd, object):
         self.p.load(self.status['track']['url'])
         self.do_status()
 
+    def _song_report_handler(self, signum, frame):
+        """Signal handler for SIGUSR2. Report track play after 30 seconds."""
+        print('Reporting song...')
+        self.api.report_track(self.mix_id, self.status['track']['id'])
+
     # Actual commands
 
     def do_pause(self, s):
@@ -143,8 +149,9 @@ class PlayCommand(cmd.Cmd, object):
     def do_stop(self, s):
         print('Stopping playback...')
 
-        # Reset signal handling for SIGUSR1
+        # Reset signal handling
         signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+        signal.signal(signal.SIGUSR2, signal.SIG_DFL)
 
         # Stop playback, terminate mplayer
         self.p.stop()

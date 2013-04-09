@@ -200,16 +200,9 @@ class EightTracksAPI(object):
             track_id:
                 The id of the track to report.
 
-        Returns:
-            TODO
-
-        Raises:
-            TODO
-
         """
         play_token = self._obtain_play_token()
-        data = self._get('sets/{token}/report.json'.format(token=play_token), {
+        self._get('sets/{token}/report.json'.format(token=play_token), {
             'mix_id': mix_id,
             'track_id': track_id,
         })
-        import ipdb; ipdb.set_trace()
