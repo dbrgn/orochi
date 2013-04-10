@@ -1,18 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-import os
-import sys
-
 import requests
-
-
-def env(key):
-    try:
-        return os.environ[key]
-    except KeyError:
-        print('Please set the {key} environment variable.'.format(key=key))
-        sys.exit(-1)
 
 
 class APIError(RuntimeError):
@@ -26,7 +15,7 @@ class EightTracksAPI(object):
         self.base_url = 'https://8tracks.com/'
         self.s = requests.Session()
         self.s.headers.update({
-            'X-Api-Key': env('EIGHTTRACKS_API_KEY'),
+            'X-Api-Key': 'da88fbe6cfd1996c0b6391372a8c7f3eb2dbc5be',
             'X-Api-Version': 2,
             'Accept': 'application/json',
         })

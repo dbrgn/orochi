@@ -26,7 +26,6 @@ Install::
 
 Start::
 
-    $ export EIGHTTRACKS_API_KEY='your_api_key'    
     $ python -m orochi.client
 
 Available commands (main menu)::
