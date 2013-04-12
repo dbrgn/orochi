@@ -130,6 +130,9 @@ class PlayCommand(cmd.Cmd, object):
         """Signal handler for SIGUSR1. Advance to the next track, if
         available."""
         print('\nSong has ended!')
+        if self.status['at_last_track']:
+            print('\nPlaylist has ended!')
+            return True
         self.status = self.api.next_track(self.mix_id)
         self.p.load(self.status['track']['url'])
         self.do_status()
@@ -169,11 +172,17 @@ class PlayCommand(cmd.Cmd, object):
         print('Stop the playback and exit play mode.')
 
     def do_skip(self, s):
-        print('Skipping track...')
-        # TODO check if skipping is allowed
-        self.status = self.api.skip_track(self.mix_id)
-        self.p.load(self.status['track']['url'])
-        self.do_status()
+        if not self.status['skip_allowed']:
+            print('Sorry, skipping not allowed due to legal reasons. You may only skip '
+                  '3 times during a 60 minute time frame.')
+        elif self.status['at_last_track']:
+            print('Playlist has ended!')
+            return True
+        else:
+            print('Skipping track...')
+            self.status = self.api.skip_track(self.mix_id)
+            self.p.load(self.status['track']['url'])
+            self.do_status()
 
     def help_skip(self):
         print('Skip the current song.')
