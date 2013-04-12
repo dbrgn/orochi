@@ -53,7 +53,11 @@ class EightTracksAPI(object):
 
         """
         r = self.s.get(self.base_url + resource, params=params, **kwargs)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            e.args = e.args + (r.json(),)
+            raise e
         data = r.json()
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
