@@ -2,6 +2,7 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
+import sys
 import cmd
 import signal
 from string import Template
@@ -128,15 +129,19 @@ class PlayCommand(cmd.Cmd, object):
     def _song_end_handler(self, signum, frame):
         """Signal handler for SIGUSR1. Advance to the next track, if
         available."""
-        print('Song has ended!')
+        print('\nSong has ended!')
         self.status = self.api.next_track(self.mix_id)
         self.p.load(self.status['track']['url'])
         self.do_status()
+        print(self.prompt, end='')
+        sys.stdout.flush()
 
     def _song_report_handler(self, signum, frame):
         """Signal handler for SIGUSR2. Report track play after 30 seconds."""
-        print('Reporting song...')
+        print('\nReporting song...')
         self.api.report_track(self.mix_id, self.status['track']['id'])
+        print(self.prompt, end='')
+        sys.stdout.flush()
 
     # Actual commands
 
