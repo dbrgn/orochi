@@ -192,6 +192,12 @@ class PlayCommand(cmd.Cmd, object):
     def help_status(self):
         print('Show the status of the currently playing song.')
 
+    def do_debug(self, s):
+        import ipdb; ipdb.set_trace()
+
+    def help_debug(self):
+        print('Start an interactive ipdb session.')
+
     do_EOF = do_stop
     help_EOF = help_stop
 
