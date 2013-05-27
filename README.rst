@@ -1,7 +1,7 @@
 Orochi – 8tracks.com commandline client
 =======================================
 
-**Warning: Pre-Alpha!**
+**Warning: Alpha quality!**
 
 Orochi is a command line client for `8tracks.com <http://8tracks.com/>`__
 written in Python.
