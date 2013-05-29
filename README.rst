@@ -20,6 +20,11 @@ Python).
 Usage
 -----
 
+Prerequisites::
+
+ - Python 2.7+ (compatibility for 3.2+ will probably follow in the future)
+ - mplayer
+
 Install::
 
     $ pip install -r requirements.txt
