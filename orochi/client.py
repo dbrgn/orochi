@@ -17,7 +17,7 @@ class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
 
-    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments']
+    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password']
 
     def __init__(self, filename='config.json'):
         self.filename = filename
