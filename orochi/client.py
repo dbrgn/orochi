@@ -15,7 +15,7 @@ from .player import MPlayer
 class CmdExitMixin(object):
     """A mixin for a Cmd instance that provides the exit and quit command."""
 
-    def do_exit(self, s):
+    def do_exit(self, s=''):
         print('Goodbye.')
         return True
 
@@ -129,13 +129,15 @@ class PlayCommand(cmd.Cmd, object):
     def _song_end_handler(self, signum, frame):
         """Signal handler for SIGUSR1. Advance to the next track, if
         available."""
-        print('\nSong has ended!')
+        print('')
+        print('Song has ended!')
         if self.status['at_last_track']:
-            print('\nPlaylist has ended!')
-            return True
-        self.status = self.api.next_track(self.mix_id)
-        self.p.load(self.status['track']['url'])
-        self.do_status()
+            print('Playlist has ended!')
+            self.do_stop()
+        else:
+            self.status = self.api.next_track(self.mix_id)
+            self.p.load(self.status['track']['url'])
+            self.do_status()
         print(self.prompt, end='')
         sys.stdout.flush()
 
@@ -148,13 +150,13 @@ class PlayCommand(cmd.Cmd, object):
 
     # Actual commands
 
-    def do_pause(self, s):
+    def do_pause(self, s=''):
         self.p.playpause()
 
     def help_pause(self):
         print('Pause or resume the playback.')
 
-    def do_stop(self, s):
+    def do_stop(self, s=''):
         print('Stopping playback...')
 
         # Reset signal handling
@@ -171,7 +173,7 @@ class PlayCommand(cmd.Cmd, object):
     def help_stop(self):
         print('Stop the playback and exit play mode.')
 
-    def do_skip(self, s):
+    def do_skip(self, s=''):
         if not self.status['skip_allowed']:
             print('Sorry, skipping not allowed due to legal reasons. You may only skip '
                   '3 times during a 60 minute time frame.')
@@ -206,7 +208,7 @@ class PlayCommand(cmd.Cmd, object):
     def help_status(self):
         print('Show the status of the currently playing song.')
 
-    def do_debug(self, s):
+    def do_debug(self, s=''):
         import ipdb; ipdb.set_trace()
 
     def help_debug(self):
