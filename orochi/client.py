@@ -17,9 +17,12 @@ class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
 
+    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments']
+
     def __init__(self, filename='config.json'):
         self.filename = filename
 
+        # Parse existing config file
         if not os.path.isfile(self.filename):
             self.config = {}
         else:
@@ -34,6 +37,11 @@ class ConfigFile(object):
                         raise ValueError('"{}" could not be parsed. Is it a valid JSON file?' \
                                          .format(self.filename))
 
+        # Populate configfile with default values
+        for key in self.DEFAULT_CONFIG_KEYS:
+            self.config[key] = self.config.get(key, '')
+        self._persist()
+
     def __getitem__(self, key):
         return self.config.get(key, '')
 
@@ -45,6 +53,9 @@ class ConfigFile(object):
         """Write current configuration to file."""
         with open(self.filename, 'w') as configfile:
             configfile.write(json.dumps(self.config, indent=2))
+
+    def get(self, *args):
+        return self.config.get(*args)
 
 
 class CmdExitMixin(object):
@@ -120,7 +131,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         except KeyError:
             print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
         else:
-            i = PlayCommand(mix_id, self)
+            i = PlayCommand(self.config, mix_id, self)
             i.prompt = '{0}:{1})> '.format(self.prompt[:-3], mix_id)
             i.cmdloop()
 
@@ -133,7 +144,7 @@ class PlayCommand(cmd.Cmd, object):
 
     # Setup / configuration
 
-    def __init__(self, mix_id, parent_cmd, *args, **kwargs):
+    def __init__(self, config, mix_id, parent_cmd, *args, **kwargs):
         self.mix_id = mix_id
         self.parent_cmd = parent_cmd
         self.api = parent_cmd.api
@@ -141,7 +152,7 @@ class PlayCommand(cmd.Cmd, object):
         r = super(PlayCommand, self).__init__(*args, **kwargs)
 
         # Initialize mplayer
-        self.p = MPlayer()
+        self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
 
         # Register signal handlers
         signal.signal(signal.SIGUSR1, self._song_end_handler)

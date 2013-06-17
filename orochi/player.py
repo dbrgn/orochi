@@ -27,7 +27,7 @@ class TerminatedException(object):
 
 class MPlayer(object):
 
-    def __init__(self, timeout=10):
+    def __init__(self, timeout=10, extra_arguments=''):
         """Create a new asynchronous MPlayer process.
 
         The mplayer process will be started in slave mode and with line
@@ -37,15 +37,20 @@ class MPlayer(object):
         Args:
             timeout:
                 The number of seconds to wait for a command to finish. Default: 6.
+            extra_arguments:
+                Extra arguments that are passed on to the mplayer slave
+                process.
 
         """
         self.timeout = timeout
-        self.p = Process(['mplayer',
+        command = ['mplayer',
             '-slave', '-idle',
             '-really-quiet', '-msglevel', 'global=6:cplayer=4', '-msgmodule',
             '-input', 'nodefault-bindings',
-            '-cache', '1024',
-        ], bufsize=1)
+            '-cache', '1024']
+        if extra_arguments:
+            command.extend(extra_arguments.split(' '))
+        self.p = Process(command, bufsize=1)
         self.t = None
         self.write_lock = threading.Lock()
 

@@ -60,6 +60,22 @@ Available commands (play mode menu)::
         Change playback volume. The argument must be a number between 0 and 100.
 
 
+Configuration
+-------------
+
+The first time Orochi starts, it creates the ``config.json`` configfile. The
+following configurations can be changed::
+
+    mplayer_extra_args:
+        Extra arguments that are passed on to the mplayer instance.
+
+Example configuration::
+
+    {
+        "mplayer_extra_args": "-ao alsa:device=hw=1.0"
+    }
+
+
 Coding Guidelines
 -----------------
 
