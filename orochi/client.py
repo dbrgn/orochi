@@ -51,8 +51,13 @@ class ConfigFile(object):
 
     def _persist(self):
         """Write current configuration to file."""
+        file_existed = os.path.isfile(self.filename)
         with open(self.filename, 'w') as configfile:
             configfile.write(json.dumps(self.config, indent=2))
+        # Make sure to set permissions that don't allow anyone else to see
+        # content.
+        if not file_existed:
+            os.chmod(self.filename, 0600)
 
     def get(self, *args):
         return self.config.get(*args)
