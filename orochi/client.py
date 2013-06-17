@@ -4,12 +4,47 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 import sys
 import cmd
+import json
 import signal
 from string import Template
 from textwrap import TextWrapper
 
 from .api import EightTracksAPI
 from .player import MPlayer
+
+
+class ConfigFile(object):
+    """Wrap a json based config file. Behave like a dictionary. Persist data on
+    each write."""
+
+    def __init__(self, filename='config.json'):
+        self.filename = filename
+
+        if not os.path.isfile(self.filename):
+            self.config = {}
+        else:
+            with open(self.filename, 'r') as configfile:
+                conf = ' '.join(configfile.xreadlines())
+                if conf == '':
+                    self.config = {}
+                else:
+                    try:
+                        self.config = json.loads(conf)
+                    except ValueError:
+                        raise ValueError('"{}" could not be parsed. Is it a valid JSON file?' \
+                                         .format(self.filename))
+
+    def __getitem__(self, key):
+        return self.config.get(key, '')
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
+        self._persist()
+
+    def _persist(self):
+        """Write current configuration to file."""
+        with open(self.filename, 'w') as configfile:
+            configfile.write(json.dumps(self.config, indent=2))
 
 
 class CmdExitMixin(object):
@@ -39,6 +74,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.api = EightTracksAPI()
         self.mix_ids = {}
         self.volume = None
+        self.config = ConfigFile()
         return super(Client, self).preloop()
 
     def precmd(self, line):
