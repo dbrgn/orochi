@@ -89,6 +89,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def preloop(self):
         self.api = EightTracksAPI()
         self.mix_ids = {}
+        self.previous_mix_id = None
         self.volume = None
         self.config = ConfigFile()
         return super(Client, self).preloop()
@@ -139,10 +140,24 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = '{0}:{1})> '.format(self.prompt[:-3], mix_id)
             i.cmdloop()
+            self.previous_mix_id = mix_id
 
     def help_play(self):
         print('Syntax: play <mix_number>')
         print('Play the nth mix from the last search results.')
+
+    def do_next_mix(self, s):
+        if self.previous_mix_id is None:
+            print('*** No previous mix found.')
+        else:
+            mix_id = self.api.next_mix(self.previous_mix_id)['id']
+            i = PlayCommand(self.config, mix_id, self)
+            i.prompt = '{0}:{1})> '.format(self.prompt[:-3], mix_id)
+            i.cmdloop()
+            self.previous_mix_id = mix_id
+
+    def help_next_mix(self):
+        print('Play the next mix. Requires that at least one mix has already been played.')
 
 
 class PlayCommand(cmd.Cmd, object):
