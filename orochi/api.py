@@ -199,3 +199,21 @@ class EightTracksAPI(object):
             'mix_id': mix_id,
             'track_id': track_id,
         })
+
+    def next_mix(self, mix_id):
+        """Request the next mix similar to the current mix.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+
+        Returns:
+            The next mix.
+
+        """
+        play_token = self._obtain_play_token()
+        resource = 'sets/{token}/next_mix.json'.format(token=play_token)
+        data = self._get(resource, {
+            'mix_id': mix_id,
+        })
+        return data['next_mix']
