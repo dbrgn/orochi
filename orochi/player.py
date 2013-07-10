@@ -14,15 +14,21 @@ except ImportError:  # Python < 3.3
 from .asyncproc import Process
 
 
-class TerminatedException(object):
+class TerminatedException(RuntimeError):
+    """An exception that is raised when interaction with the player is
+    attempted even if the background thread is already dead."""
+    pass
+
+
+class DeadMPlayer(object):
     """This is a "dummy object" that replaces the reference to the mplayer
     process as soon as the process is terminated.
 
-    All it does is raising a RuntimeError on any method call.
+    All it does is raising a :ex:``TerminatedException`` on any method call.
 
     """
     def __getattr__(self, attr):
-        raise RuntimeError('MPlayer has been terminated and cannot be used anymore.')
+        raise TerminatedException('MPlayer has been terminated and cannot be used anymore.')
 
 
 class MPlayer(object):
@@ -173,7 +179,7 @@ class MPlayer(object):
         if hasattr(self.p, 'terminate'):
             self._stop_background_thread()
             self.p.terminate()
-            self.p = TerminatedException()
+            self.p = DeadMPlayer()
 
     def __del__(self):
         """Destructor. Calls ``self.terminate()``."""
