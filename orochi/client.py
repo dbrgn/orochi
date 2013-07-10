@@ -19,7 +19,15 @@ class ConfigFile(object):
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password']
 
-    def __init__(self, filename='config.json'):
+    def __init__(self, filename=None):
+        if not filename:
+            xdg_config_home = os.environ.get('XDG_CONFIG_HOME')
+            if not xdg_config_home:
+                xdg_config_home = os.path.join(os.path.expanduser('~'), '.config')
+            configdir = os.path.join(xdg_config_home, 'orochi')
+            if not os.path.isdir(configdir):
+                os.makedirs(configdir)
+            filename = os.path.join(configdir, 'config.json')
         self.filename = filename
 
         # Parse existing config file
