@@ -237,6 +237,7 @@ class PlayCommand(cmd.Cmd, object):
         if not self.status['skip_allowed']:
             print('Sorry, skipping not allowed due to legal reasons. You may only skip '
                   '3 times during a 60 minute time frame.')
+            print('See http://8tracks.com/licensing for more information.')
         elif self.status['at_last_track']:
             print('Playlist has ended!')
             return True
@@ -275,7 +276,9 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_status(self, s=''):
         track = self.status['track']
-        print('Now playing "{0[name]}" by "{0[performer]}".'.format(track))
+        info = 'Now playing "{0[name]}" by "{0[performer]}", ' + \
+               'from the album "{0[release_name]}" ({0[year]}).'
+        print(info.format(track))
 
     def help_status(self):
         print('Show the status of the currently playing song.')
