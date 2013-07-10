@@ -3,6 +3,7 @@ source =
     orochi
 omit =
     tests/*
+    orochi/asyncproc.py
 
 [report]
 # Regexes for lines to exclude from consideration
