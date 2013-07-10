@@ -10,7 +10,7 @@ from string import Template
 from textwrap import TextWrapper
 
 from .api import EightTracksAPI
-from .player import MPlayer
+from .player import MPlayer, TerminatedException
 
 
 class ConfigFile(object):
@@ -224,8 +224,11 @@ class PlayCommand(cmd.Cmd, object):
         signal.signal(signal.SIGUSR2, signal.SIG_DFL)
 
         # Stop playback, terminate mplayer
-        self.p.stop()
-        self.p.terminate()
+        try:
+            self.p.stop()
+            self.p.terminate()
+        except TerminatedException:
+            pass  # We wanted to stop the process anyways.
 
         # Return to main loop
         return True
