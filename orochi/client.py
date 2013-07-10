@@ -270,6 +270,9 @@ class PlayCommand(cmd.Cmd, object):
     help_EOF = help_stop
 
 
-if __name__ == '__main__':
+def main():
     client = Client()
     client.cmdloop()
+
+if __name__ == '__main__':
+    main()
