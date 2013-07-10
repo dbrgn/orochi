@@ -83,6 +83,13 @@ PEP8 via `flake8 <https://pypi.python.org/pypi/flake8>`_ with max-line-width set
 to 99 and E126-E128 ignored.
 
 
+Testing
+-------
+
+Install ``requirements-dev.txt``, then run ``py.test`` in the main directory.
+Violations of the coding guidelines above will be counted as test fails.
+
+
 License
 -------
 
