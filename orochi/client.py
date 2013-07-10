@@ -42,7 +42,7 @@ class ConfigFile(object):
                     try:
                         self.config = json.loads(conf)
                     except ValueError:
-                        raise ValueError('"{}" could not be parsed. Is it a valid JSON file?' \
+                        raise ValueError('"{}" could not be parsed. Is it a valid JSON file?'
                                          .format(self.filename))
 
         # Populate configfile with default values
@@ -269,10 +269,14 @@ class PlayCommand(cmd.Cmd, object):
         print('Show the status of the currently playing song.')
 
     def do_debug(self, s=''):
-        import ipdb; ipdb.set_trace()
+        try:
+            import ipdb as pdb
+        except ImportError:
+            import pdb
+        pdb.set_trace()
 
     def help_debug(self):
-        print('Start an interactive ipdb session.')
+        print('Start an interactive ipdb session. Only used during development.')
 
     do_EOF = do_stop
     help_EOF = help_stop
