@@ -185,7 +185,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Song has ended!')
         if self.status['at_last_track']:
             print('Playlist has ended!')
-            self.do_stop()
+            self.do_next_mix()
         else:
             self.status = self.api.next_track(self.mix_id)
             self.p.load(self.status['track']['url'])
