@@ -123,7 +123,7 @@ class MPlayer(object):
             while not stop_event.is_set():
                 if not reported:
                     with write_lock:
-                        process.write('get_time_pos\n')
+                        process.write('pausing_keep_force get_time_pos\n')
                 stdout = process.read()
                 if 'GLOBAL: EOF code: 1' in stdout:
                     os.kill(os.getpid(), signal.SIGUSR1)
@@ -164,7 +164,7 @@ class MPlayer(object):
             assert 0 <= amount <= 100
         except (ValueError, AssertionError):
             raise ValueError('``amount`` must be a number between 0 and 100.')
-        self._send_command('volume {} 1', amount)
+        self._send_command('pausing_keep_force volume {} 1', amount)
 
     def terminate(self):
         """Shut down mplayer and replace the reference to the async process
