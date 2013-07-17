@@ -149,17 +149,20 @@ class MPlayer(object):
 
             """
             reported = False
+            time_pos_rex = re.compile(r'GLOBAL: ANS_TIME_POSITION=([0-9]+\.[0-9]+)')
             while not stop_event.is_set():
                 if not reported:
                     with write_lock:
                         process.write('{} get_time_pos\n'.format(pausing_keep))
                 stdout = process.read()
-                if 'GLOBAL: EOF code: 1' in stdout:
-                    os.kill(os.getpid(), signal.SIGUSR1)
-                match = re.search(r'GLOBAL: ANS_TIME_POSITION=([0-9]+\.[0-9]+)', stdout)
-                if not reported and match and float(match.groups()[0]) >= 30:
-                    os.kill(os.getpid(), signal.SIGUSR2)
-                    reported = True
+                if stdout:
+                    if 'GLOBAL: EOF code: 1' in stdout:
+                        os.kill(os.getpid(), signal.SIGUSR1)
+                    if not reported:
+                        match = time_pos_rex.search(stdout)
+                        if match and float(match.group(1)) >= 30:
+                            os.kill(os.getpid(), signal.SIGUSR2)
+                            reported = True
                 stop_event.wait(0.5)
         self.t_stop = threading.Event()
         thread_args = (self.p, self.t_stop, self.write_lock, self.pausing_keep)
