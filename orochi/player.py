@@ -47,6 +47,7 @@ class MPlayer(object):
             '-slave', '-idle',
             '-really-quiet', '-msglevel', 'global=6:cplayer=4', '-msgmodule',
             '-input', 'nodefault-bindings',
+            '-vo', 'null',
             '-cache', '1024']
         if extra_arguments:
             command.extend(extra_arguments.split(' '))
