@@ -193,7 +193,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Song has ended!')
         if self.status['at_last_track']:
             print('Playlist has ended!')
-            self.do_stop()
+            self.do_next_mix()
         else:
             self.status = self.api.next_track(self.mix_id)
             self.p.load(self.status['track']['url'])
@@ -248,6 +248,18 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_skip(self):
         print('Skip the current song.')
+
+    def do_next_mix(self, s=''):
+        print('Skipping to the next mix...')
+        self.mix_id = self.api.next_mix(self.mix_id)['id']
+        self.prompt = '{0}:{1})> '.format(self.parent_cmd.prompt[:-3], self.mix_id)
+
+        self.status = self.api.play_mix(self.mix_id)
+        self.p.load(self.status['track']['url'])
+        self.do_status()
+
+    def help_next_mix(self):
+        print('Skip to the next mix.')
 
     def do_volume(self, s):
         try:
