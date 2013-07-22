@@ -13,6 +13,35 @@ from .api import EightTracksAPI
 from .player import MPlayer, TerminatedException
 
 
+# Tuple containing prefix, main text and suffix for command line prompt
+DEFAULT_PROMPT = ('(', '8tracks', ')> ')
+
+
+def get_prompt(mix):
+    """Return a prompt text based on the specified mix dictionary.
+
+    Args:
+        mix:
+            Dictionary returned from 8tracks api containing mix information.
+
+    Returns:
+        A string that can be used as prompt.
+
+    """
+    # Get default prompt parts
+    parts = list(DEFAULT_PROMPT)
+
+    # Get and shorten mix name if necessary
+    NAME_MAX_LENGTH = 30  # Hardcoded for now
+    name = mix['name'][:NAME_MAX_LENGTH]
+    if len(mix['name']) > NAME_MAX_LENGTH:
+        name += '...'
+
+    # Reassemble and return prompt parts
+    parts[1] += ':{}'.format(name)
+    return ''.join(parts)
+
+
 class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
@@ -92,11 +121,11 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     intro = 'Welcome! Type "help" for more information.'
 
-    prompt = '(8tracks)> '
+    prompt = ''.join(DEFAULT_PROMPT)
 
     def preloop(self):
         self.api = EightTracksAPI()
-        self.mix_ids = {}
+        self.mixes = {}
         self.volume = None
         self.config = ConfigFile()
         return super(Client, self).preloop()
@@ -118,10 +147,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
         mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m)')
 
-        self.mix_ids = {}
+        self.mixes = {}
         for i, mix in enumerate(mixes, 1):
             # Cache mix ids
-            self.mix_ids[i] = mix['id']
+            self.mixes[i] = mix
             # Print line
             prefix = ' {0})'.format(i).ljust(5)
             hours = mix['duration'] // 60 // 60
@@ -137,7 +166,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def do_play(self, s):
         try:
-            mix_id = self.mix_ids[int(s)]
+            mix = self.mixes[int(s)]
+            mix_id = mix['id']
         except ValueError:
             print('*** Invalid mix number: Please run a search first and then '
                   'specify a mix number to play.')
@@ -145,7 +175,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
         else:
             i = PlayCommand(self.config, mix_id, self)
-            i.prompt = '{0}:{1})> '.format(self.prompt[:-3], mix_id)
+            i.prompt = get_prompt(mix)
             i.cmdloop()
 
     def help_play(self):
@@ -255,8 +285,9 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_next_mix(self, s=''):
         print('Skipping to the next mix...')
-        self.mix_id = self.api.next_mix(self.mix_id)['id']
-        self.prompt = '{0}:{1})> '.format(self.parent_cmd.prompt[:-3], self.mix_id)
+        mix = self.api.next_mix(self.mix_id)
+        self.mix_id = mix['id']
+        self.prompt = get_prompt(mix)
 
         self.status = self.api.play_mix(self.mix_id)
         self.p.load(self.status['track']['url'])
@@ -294,7 +325,7 @@ class PlayCommand(cmd.Cmd, object):
         pdb.set_trace()
 
     def help_debug(self):
-        print('Start an interactive ipdb session. Only used during development.')
+        print('Start an interactive (i)pdb session. Only used during development.')
 
     do_EOF = do_stop
     help_EOF = help_stop
