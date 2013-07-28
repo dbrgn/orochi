@@ -83,8 +83,9 @@ Example configuration::
 Coding Guidelines
 -----------------
 
-PEP8 via `flake8 <https://pypi.python.org/pypi/flake8>`_ with max-line-width set
-to 99 and E126-E128 ignored.
+`PEP8 <http://www.python.org/dev/peps/pep-0008/>`__ via `flake8
+<https://pypi.python.org/pypi/flake8>`_ with max-line-width set to 99 and
+E126-E128 ignored.
 
 
 Testing
