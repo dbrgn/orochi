@@ -57,6 +57,8 @@ Available commands (play mode menu)::
         Stop the playback and exit play mode.
     skip:
         Skip the current song.
+    next_mix:
+        Skip to the next mix.
     status:
         Show the status of the currently playing song.
     volume:
