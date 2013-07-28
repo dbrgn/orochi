@@ -192,7 +192,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 if (typedVal > 0 and typedVal <= 10):
                     mix = self.mixes[typedVal]
                     mix_id = mix['id']
-                    setMixes = true
+                    setMixes = True
                 else:
                     mix_id = typedVal
                     mix = self.api.get_mix_withID(mix_id)
