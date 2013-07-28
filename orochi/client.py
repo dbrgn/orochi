@@ -165,56 +165,42 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Search for a mix. You can then play a mix with the "play" command.')
 
     def do_play(self, s):
-        try:
-            mix = self.mixes[int(s)]
-            mix_id = mix['id']
-        except ValueError:
-            print('*** Invalid mix number: Please run a search first and then '
-                  'specify a mix number to play.')
-        except KeyError:
-            print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
+        setMixes = False
+        if (s.startswith('http')):
+            try:
+                #assuming it's a mixURL
+                mix = self.api.get_mix_withURL(s)
+                mix_id = mix['id']
+                setMixes = True
+            except:
+                APIError('*** Invalid URL')
         else:
+            try:
+                typedVal = int(s)
+                #The 10 here really probably needs to be a config file option
+                if (typedVal > 0 and typedVal <= 10):
+                    mix = self.mixes[typedVal]
+                    mix_id = mix['id']
+                    setMixes = true
+                else:
+                    mix_id = typedVal
+                    mix = self.api.get_mix_withID(mix_id)
+                    setMixes = True
+            except ValueError:
+                print('*** Invalid mix number: Please run a search first and then '
+                      'specify a mix number to play.')
+            except KeyError:
+                print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
+        if (setMixes):
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = get_prompt(mix)
             i.cmdloop()
 
-    def do_playMixID(self,s):
-        try:
-            mix_id=int(s)
-            mix = self.api.get_mix_withID(mix_id);
-        except ValueError:
-            print('*** Invalid mixID!')
-        except APIError:
-            print('*** Invalid mixID!')
-        else:
-            i = PlayCommand(self.config,mix_id,self)
-            i.prompt = get_prompt(mix)
-            i.cmdloop()
-
-    def help_playMixID(self):
-        print('Sytax: playMixID <mixID>')
-        print('Play a mix directly. Use the mix ID found on the site.')
-
-    def do_playURL(self,s):
-        try:
-            mix = self.api.get_mix_withURL(s)
-            mix_id = mix['id'];
-        except ValueError:
-            print('*** Invalid URL!')
-        except APIError:
-            print('*** Invalid URL!')
-        else:
-            i = PlayCommand(self.config,mix_id,self)
-            i.prompt = get_prompt(mix)
-            i.cmdloop()
-
-    def help_playURL(self):
-        print('Syntax: playURL <mixURL>')
-        print('Play a mix by URL directly. Use the URL from the 8tracks site.')
-
     def help_play(self):
-        print('Syntax: play <mix_number>')
-        print('Play the nth mix from the last search results.')
+        print('Syntax: play <mix_number_from_search> OR play <mixID> OR play <mixURL>')
+        print('Invoking play <mix_number> will play nth mix from the last search results.')
+        print('Invoking play <mix_ID> will play the mix with the specific mixID')
+        print('Invokong play <URL> will play the mix at the specified URL. Must start with "http"')
 
 
 class PlayCommand(cmd.Cmd, object):
