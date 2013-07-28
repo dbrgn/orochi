@@ -1,5 +1,5 @@
-Orochi – 8tracks.com commandline client
-=======================================
+Orochi – 8tracks.com client
+===========================
 
 **Warning: Alpha quality!**
 
@@ -57,6 +57,8 @@ Available commands (play mode menu)::
         Stop the playback and exit play mode.
     skip:
         Skip the current song.
+    next_mix:
+        Skip to the next mix.
     status:
         Show the status of the currently playing song.
     volume:
@@ -67,8 +69,9 @@ Available commands (play mode menu)::
 Configuration
 -------------
 
-The first time Orochi starts, it creates the ``config.json`` configfile. The
-following configurations can be changed::
+The first time Orochi is started, it creates the ``config.json`` configfile in
+the ``~/.config/orochi/`` directory. The following configurations can be
+changed::
 
     mplayer_extra_args:
         Extra arguments that are passed on to the mplayer instance.
@@ -83,8 +86,9 @@ Example configuration::
 Coding Guidelines
 -----------------
 
-PEP8 via `flake8 <https://pypi.python.org/pypi/flake8>`_ with max-line-width set
-to 99 and E126-E128 ignored.
+`PEP8 <http://www.python.org/dev/peps/pep-0008/>`__ via `flake8
+<https://pypi.python.org/pypi/flake8>`_ with max-line-width set to 99 and
+E126-E128 ignored.
 
 
 Testing
@@ -92,6 +96,13 @@ Testing
 
 Install ``requirements-dev.txt``, then run ``py.test`` in the main directory.
 Violations of the coding guidelines above will be counted as test fails.
+
+
+Contributing
+------------
+
+Please refer to the `Contributors Guidelines
+<https://github.com/dbrgn/orochi/blob/master/CONTRIBUTING.md>`__. Thanks!
 
 
 License
