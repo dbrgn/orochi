@@ -33,7 +33,7 @@ class DeadMPlayer(object):
 
 class MPlayer(object):
 
-    def __init__(self, timeout=10, extra_arguments=''):
+    def __init__(self, timeout=15, extra_arguments=''):
         """Create a new asynchronous MPlayer process.
 
         The mplayer process will be started in slave mode and with line

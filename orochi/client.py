@@ -9,7 +9,7 @@ import signal
 from string import Template
 from textwrap import TextWrapper
 
-from .api import EightTracksAPI
+from .api import EightTracksAPI, APIError
 from .player import MPlayer, TerminatedException
 
 
@@ -177,6 +177,40 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = get_prompt(mix)
             i.cmdloop()
+
+    def do_playMixID(self,s):
+        try:
+            mix_id=int(s)
+            mix = self.api.get_mix_withID(mix_id);
+        except ValueError:
+            print('*** Invalid mixID!')
+        except APIError:
+            print('*** Invalid mixID!')
+        else:
+            i = PlayCommand(self.config,mix_id,self)
+            i.prompt = get_prompt(mix)
+            i.cmdloop()
+
+    def help_playMixID(self):
+        print('Sytax: playMixID <mixID>')
+        print('Play a mix directly. Use the mix ID found on the site.')
+
+    def do_playURL(self,s):
+        try:
+            mix = self.api.get_mix_withURL(s)
+            mix_id = mix['id'];
+        except ValueError:
+            print('*** Invalid URL!')
+        except APIError:
+            print('*** Invalid URL!')
+        else:
+            i = PlayCommand(self.config,mix_id,self)
+            i.prompt = get_prompt(mix)
+            i.cmdloop()
+
+    def help_playURL(self):
+        print('Syntax: playURL <mixURL>')
+        print('Play a mix by URL directly. Use the URL from the 8tracks site.')
 
     def help_play(self):
         print('Syntax: play <mix_number>')
