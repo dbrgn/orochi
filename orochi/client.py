@@ -8,6 +8,7 @@ import json
 import signal
 from string import Template
 from textwrap import TextWrapper
+from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
 from .player import MPlayer, TerminatedException
@@ -165,6 +166,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Search for a mix. You can then play a mix with the "play" command.')
 
     def do_play(self, s):
+        #The logic could be simplified here, and not have to re-catch all the exceptions
+        #But, it makes the error messages clearer if we know where we went wrong.
         setMixes = False
         if (s.startswith('http')):
             try:
@@ -172,8 +175,16 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 mix = self.api.get_mix_withURL(s)
                 mix_id = mix['id']
                 setMixes = True
-            except:
-                APIError('*** Invalid URL')
+            except APIError:
+                print('*** Invalid URL specified.')
+            except HTTPError:
+                print('*** Server returned a non-200 status code.')
+            except ConnectionError:
+                print('*** Couldn\'t connect to HTTP Host, connection error.')
+            except KeyError:
+                print('*** Invalid data was returned for URL')
+            except ValueError:
+                print('*** Invalid data was returned for URL')
         else:
             try:
                 typedVal = int(s)
@@ -191,6 +202,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                       'specify a mix number to play.')
             except KeyError:
                 print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
+            except HTTPError:
+                print('*** Mix with id {i} not found.'.format(i=s))
         if (setMixes):
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = get_prompt(mix)
