@@ -200,7 +200,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: play <mix_number_from_search> OR play <mixID> OR play <mixURL>')
         print('Invoking play <mix_number> will play nth mix from the last search results.')
         print('Invoking play <mix_ID> will play the mix with the specific mixID')
-        print('Invokong play <URL> will play the mix at the specified URL. Must start with "http"')
+        print('Invoking play <URL> will play the mix at the specified URL. Must start with "http"')
 
 
 class PlayCommand(cmd.Cmd, object):
