@@ -1,5 +1,5 @@
-Orochi – 8tracks.com commandline client
-=======================================
+Orochi – 8tracks.com client
+===========================
 
 **Warning: Alpha quality!**
 
@@ -69,8 +69,9 @@ Available commands (play mode menu)::
 Configuration
 -------------
 
-The first time Orochi starts, it creates the ``config.json`` configfile. The
-following configurations can be changed::
+The first time Orochi is started, it creates the ``config.json`` configfile in
+the ``~/.config/orochi/`` directory. The following configurations can be
+changed::
 
     mplayer_extra_args:
         Extra arguments that are passed on to the mplayer instance.

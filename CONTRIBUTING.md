@@ -2,7 +2,7 @@ Contributors Guidelines
 =======================
 
 Contributions to Orochi are welcome! Please adhere to the following
-contribution guidelineselines though:
+contribution guidelines though:
 
 - Run the [test suite](https://github.com/dbrgn/orochi#testing) before
   committing and pushing your changes.
