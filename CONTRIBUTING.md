@@ -8,7 +8,10 @@ contribution guidelineselines though:
   committing and pushing your changes.
 * Please follow the [coding
   guidelines](https://github.com/dbrgn/orochi#coding-guidelines).
-* Add yourself to [AUTHORS file](https://github.com/dbrgn/orochi/blob/master/AUTHORS).
+* Add yourself to the [AUTHORS file](https://github.com/dbrgn/orochi/blob/master/AUTHORS).
+
+The following items make my life easier, but are optional:
+
 * If you have have previously filed a GitHub issue and want to contribute code
   that addresses that issue, I prefer it if you use
   [hub](https://github.com/github/hub) to convert your existing issue to a pull
