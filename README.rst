@@ -95,6 +95,13 @@ Install ``requirements-dev.txt``, then run ``py.test`` in the main directory.
 Violations of the coding guidelines above will be counted as test fails.
 
 
+Contributing
+------------
+
+Please refer to the `Contributors Guidelines
+<https://github.com/dbrgn/orochi/blob/master/CONTRIBUTING.md>`__. Thanks!
+
+
 License
 -------
 
