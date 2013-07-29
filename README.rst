@@ -43,8 +43,9 @@ Available commands (main menu)::
         Syntax: search <searchterm>
         Search for a mix. You can then play a mix with the "play" command.
     play:
-        Syntax: play <mix_number>
+        Syntax: play <mix>
         Play the nth mix from the last search results.
+        The <mix> argument can also be a mix ID or an URL.
     exit:
         Exit the interpreter.
         You can also use the Ctrl-D shortcut.

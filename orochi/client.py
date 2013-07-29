@@ -168,13 +168,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
         # But, it makes the error messages clearer if we know where we went wrong.
-        set_mixes = False
+        is_valid = False
         if (s.startswith('http')):
             try:
                 # Assuming it's a mixURL
                 mix = self.api.get_mix_with_url(s)
                 mix_id = mix['id']
-                set_mixes = True
+                is_valid = True
             except APIError:
                 print('*** Invalid URL specified.')
             except HTTPError:
@@ -190,28 +190,27 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 if (typed_val > 0 and typed_val <= 10):
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
-                    set_mixes = True
+                    is_valid = True
                 else:
                     mix_id = typed_val
                     mix = self.api.get_mix_with_id(mix_id)
-                    set_mixes = True
+                    is_valid = True
             except ValueError:
                 print('*** Invalid mix number: Please run a search first and then '
                       'specify a mix number to play.')
             except KeyError:
                 print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
             except HTTPError:
-                print('*** Mix with id {i} not found.'.format(i=s))
-        if (set_mixes):
+                print('*** Mix with id {mix_id} not found.'.format(mix_id=s))
+        if is_valid:
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = get_prompt(mix)
             i.cmdloop()
 
     def help_play(self):
-        print('Syntax: play <mix_number_from_search> OR play <mixID> OR play <mixURL>')
-        print('Invoking play <mix_number> will play nth mix from the last search results.')
-        print('Invoking play <mix_ID> will play the mix with the specific mixID')
-        print('Invoking play <URL> will play the mix at the specified URL. Must start with "http"')
+        print('Syntax: play <mix>')
+        print('The <mix> argument can either be a search result number from the last search,')
+        print('a specific 8tracks mix ID or a mix URL from the website.')
 
 
 class PlayCommand(cmd.Cmd, object):

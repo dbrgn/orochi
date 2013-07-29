@@ -109,6 +109,43 @@ class EightTracksAPI(object):
         })
         return data['mixes']
 
+    def get_mix_with_id(self, mix_id):
+        """Find and return the mix with the specified ID.
+
+        Args:
+            mix_id:
+                The 8tracks mix id.
+
+        Returns:
+            The mix object as returned by the API.
+
+        """
+        resource = 'mixes/{mix_id}.json'.format(mix_id=mix_id)
+        data = self._get(resource)
+        return data['mix']
+
+    def get_mix_with_url(self, mix_url):
+        """Find and return the mix with the specified ID.
+
+        Args:
+            mix_url:
+                The 8tracks mix URL. Must start with "http(s)".
+
+        Returns:
+            The mix object as returned by the API.
+
+        """
+        r = self.s.get(mix_url)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            e.args = e.args + (r.json(),)
+            raise e
+        data = r.json()
+        if 'errors' in data and data['errors'] is not None:
+            raise APIError(data['errors'], data)
+        return data['mix']
+
     def _playback_control(self, mix_id, command):
         """Used to do play/next/skip requests.
 
@@ -217,20 +254,3 @@ class EightTracksAPI(object):
             'mix_id': mix_id,
         })
         return data['next_mix']
-
-    def get_mix_with_id(self, mix_id):
-        resource = 'mixes/{mix_id}.json'.format(mix_id=mix_id)
-        data = self._get(resource)
-        return data['mix']
-
-    def get_mix_with_url(self, mix_url):
-        r = self.s.get(mix_url)
-        try:
-            r.raise_for_status()
-        except requests.HTTPError as e:
-            e.args = e.args + (r.json(),)
-            raise e
-        data = r.json()
-        if 'errors' in data and data['errors'] is not None:
-            raise APIError(data['errors'], data)
-        return data['mix']
