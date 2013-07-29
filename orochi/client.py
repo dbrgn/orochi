@@ -169,7 +169,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         # The logic could be simplified here, and not have to re-catch all the exceptions
         # But, it makes the error messages clearer if we know where we went wrong.
         is_valid = False
-        if (s.startswith('http')):
+        if not s:
+            self.help_play()
+        elif s.startswith('http'):
             try:
                 # Assuming it's a mixURL
                 mix = self.api.get_mix_with_url(s)
@@ -187,7 +189,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             try:
                 typed_val = int(s)
                 # The 10 here really probably needs to be a config file option
-                if (typed_val > 0 and typed_val <= 10):
+                if 0 < typed_val <= 10:
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
                     is_valid = True
