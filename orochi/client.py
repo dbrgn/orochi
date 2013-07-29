@@ -166,37 +166,35 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Search for a mix. You can then play a mix with the "play" command.')
 
     def do_play(self, s):
-        #The logic could be simplified here, and not have to re-catch all the exceptions
-        #But, it makes the error messages clearer if we know where we went wrong.
-        setMixes = False
+        # The logic could be simplified here, and not have to re-catch all the exceptions
+        # But, it makes the error messages clearer if we know where we went wrong.
+        set_mixes = False
         if (s.startswith('http')):
             try:
-                #assuming it's a mixURL
-                mix = self.api.get_mix_withURL(s)
+                # Assuming it's a mixURL
+                mix = self.api.get_mix_with_url(s)
                 mix_id = mix['id']
-                setMixes = True
+                set_mixes = True
             except APIError:
                 print('*** Invalid URL specified.')
             except HTTPError:
                 print('*** Server returned a non-200 status code.')
             except ConnectionError:
                 print('*** Couldn\'t connect to HTTP Host, connection error.')
-            except KeyError:
-                print('*** Invalid data was returned for URL')
-            except ValueError:
+            except (KeyError, ValueError):
                 print('*** Invalid data was returned for URL')
         else:
             try:
-                typedVal = int(s)
-                #The 10 here really probably needs to be a config file option
-                if (typedVal > 0 and typedVal <= 10):
-                    mix = self.mixes[typedVal]
+                typed_val = int(s)
+                # The 10 here really probably needs to be a config file option
+                if (typed_val > 0 and typed_val <= 10):
+                    mix = self.mixes[typed_val]
                     mix_id = mix['id']
-                    setMixes = True
+                    set_mixes = True
                 else:
-                    mix_id = typedVal
-                    mix = self.api.get_mix_withID(mix_id)
-                    setMixes = True
+                    mix_id = typed_val
+                    mix = self.api.get_mix_with_id(mix_id)
+                    set_mixes = True
             except ValueError:
                 print('*** Invalid mix number: Please run a search first and then '
                       'specify a mix number to play.')
@@ -204,7 +202,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print('*** Mix with number {i} not found: Did you run a search yet?'.format(i=s))
             except HTTPError:
                 print('*** Mix with id {i} not found.'.format(i=s))
-        if (setMixes):
+        if (set_mixes):
             i = PlayCommand(self.config, mix_id, self)
             i.prompt = get_prompt(mix)
             i.cmdloop()

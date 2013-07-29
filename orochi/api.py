@@ -218,13 +218,13 @@ class EightTracksAPI(object):
         })
         return data['next_mix']
 
-    def get_mix_withID(self, mix_id):
-        resource = 'mixes/{mixID}.json'.format(mixID=mix_id)
+    def get_mix_with_id(self, mix_id):
+        resource = 'mixes/{mix_id}.json'.format(mix_id=mix_id)
         data = self._get(resource)
         return data['mix']
 
-    def get_mix_withURL(self, mixURL):
-        r = self.s.get(mixURL)
+    def get_mix_with_url(self, mix_url):
+        r = self.s.get(mix_url)
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
