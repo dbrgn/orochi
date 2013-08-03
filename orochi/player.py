@@ -54,6 +54,35 @@ class MPlayer(object):
         self.t = None
         self.write_lock = threading.Lock()
 
+        # Wait for MPlayer to start
+        start = time.time()
+        while True:
+            if 'CPLAYER: MPlayer' in self.p.read():
+                break
+            elif time.time() - start > self.timeout:
+                raise RuntimeError("MPlayer didn't start inside {}s. ".format(self.timeout) +
+                                   "Something must have gone wrong.", self.p.readerr())
+            else:
+                time.sleep(0.01)
+
+        # Check for pausing_keep_force support in MPlayer
+        has_pausing_keep_force = False
+        self.p.write('pausing_keep_force get_prop thisshouldntexist\n')
+        start = time.time()
+        while time.time() - start < 0.1:
+            # Any response from MPlayer means it understood 'pausing_keep_force'
+            if 'GLOBAL: ANS_ERROR=PROPERTY_UNKNOWN' in self.p.read():
+                has_pausing_keep_force = True
+                break
+            else:
+                time.sleep(0.01)
+        if has_pausing_keep_force:
+            self.pausing_keep = 'pausing_keep_force'
+        else:
+            self.pausing_keep = 'pausing_keep'
+            print("*** Warning: current version of MPlayer doesn't support 'pausing_keep_force'.\n"
+                  "MPlayer will skip frames while paused. Upgrade to r27665 (1.0rc3) or higher.")
+
     def _send_command(self, command, *args):
         """Send a command to mplayer's stdin in a thread safe way. The function
         handles all necessary locking and automatically handles line breaks and
@@ -110,7 +139,7 @@ class MPlayer(object):
             time.sleep(0.1)
 
         # Start a background thread that checks the playback status
-        def playback_status(process, stop_event, write_lock):
+        def playback_status(process, stop_event, write_lock, pausing_keep):
             """Poll mplayer process for time_pos song and ending.
 
             When song has ended, send a SIGUSR1 signal. When time_pos is larger
@@ -123,7 +152,7 @@ class MPlayer(object):
             while not stop_event.is_set():
                 if not reported:
                     with write_lock:
-                        process.write('pausing_keep_force get_time_pos\n')
+                        process.write('{} get_time_pos\n'.format(pausing_keep))
                 stdout = process.read()
                 if 'GLOBAL: EOF code: 1' in stdout:
                     os.kill(os.getpid(), signal.SIGUSR1)
@@ -133,7 +162,7 @@ class MPlayer(object):
                     reported = True
                 stop_event.wait(0.5)
         self.t_stop = threading.Event()
-        thread_args = (self.p, self.t_stop, self.write_lock)
+        thread_args = (self.p, self.t_stop, self.write_lock, self.pausing_keep)
         self.t = threading.Thread(target=playback_status, args=thread_args)
         self.t.daemon = True
         self.t.start()
@@ -164,7 +193,7 @@ class MPlayer(object):
             assert 0 <= amount <= 100
         except (ValueError, AssertionError):
             raise ValueError('``amount`` must be a number between 0 and 100.')
-        self._send_command('pausing_keep_force volume {} 1', amount)
+        self._send_command('{} volume {} 1', self.pausing_keep, amount)
 
     def terminate(self):
         """Shut down mplayer and replace the reference to the async process
