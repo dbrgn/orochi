@@ -183,7 +183,7 @@ class MPlayer(object):
 
     def stop(self):
         """Stop playback."""
-        self._send_command('stop')
+        self._send_command('{} stop', self.pausing_keep)
         self._stop_background_thread()
 
     def volume(self, amount):
