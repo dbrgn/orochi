@@ -298,7 +298,7 @@ class PlayCommand(cmd.Cmd, object):
     def help_stop(self):
         print('Stop the playback and exit play mode.')
 
-    def do_skip(self, s=''):
+    def do_next_song(self, s=''):
         if not self.status['skip_allowed']:
             print('Sorry, skipping not allowed due to legal reasons. You may only skip '
                   '3 times during a 60 minute time frame.')
@@ -312,8 +312,8 @@ class PlayCommand(cmd.Cmd, object):
             self.p.load(self.status['track']['url'])
             self.do_status()
 
-    def help_skip(self):
-        print('Skip the current song.')
+    def help_next_song(self):
+        print('Skip to next song.')
 
     def do_next_mix(self, s=''):
         print('Skipping to the next mix...')
@@ -326,7 +326,7 @@ class PlayCommand(cmd.Cmd, object):
         self.do_status()
 
     def help_next_mix(self):
-        print('Skip to the next mix.')
+        print('Skip to next mix.')
 
     def do_volume(self, s):
         try:
@@ -361,6 +361,33 @@ class PlayCommand(cmd.Cmd, object):
 
     do_EOF = do_stop
     help_EOF = help_stop
+
+    # Command aliases
+    # TODO these methods could be generated in the constructor using a mapping
+
+    def do_n(self, *args, **kwargs):
+        self.do_next_song(*args, **kwargs)
+
+    def help_n(self):
+        print('Alias for "next_song".')
+
+    def do_p(self, *args, **kwargs):
+        self.do_pause(*args, **kwargs)
+
+    def help_p(self):
+        print('Alias for "pause".')
+
+    def do_s(self, *args, **kwargs):
+        self.do_status(*args, **kwargs)
+
+    def help_s(self):
+        print('Alias for "status".')
+
+    def do_v(self, *args, **kwargs):
+        self.do_volume(*args, **kwargs)
+
+    def help_v(self):
+        print('Alias for "volume".')
 
 
 def main():

@@ -52,17 +52,17 @@ Available commands (main menu)::
 
 Available commands (play mode menu)::
 
-    pause:
+    pause / p:
         Pause or resume the playback.
     stop:
         Stop the playback and exit play mode.
-    skip:
-        Skip the current song.
+    next_song / n:
+        Skip to next song.
     next_mix:
-        Skip to the next mix.
-    status:
+        Skip to next mix.
+    status / s:
         Show the status of the currently playing song.
-    volume:
+    volume / v:
         Syntax: volume <amount>
         Change playback volume. The argument must be a number between 0 and 100.
 
