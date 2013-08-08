@@ -135,6 +135,16 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.console_width = int(os.popen('stty size', 'r').read().split()[1])
         return super(Client, self).precmd(line)
 
+    def cmdloop(self, intro=None):
+        """Ignore Ctrl+C."""
+        if intro is not None:
+            self.intro = intro
+        try:
+            super(Client, self).cmdloop()
+        except KeyboardInterrupt as e:
+            print()  # Newline
+            self.cmdloop(intro='')
+
     def emptyline(self):
         """Don't repeat last command on empty line."""
         pass
@@ -241,6 +251,13 @@ class PlayCommand(cmd.Cmd, object):
         self.do_status()
 
         return r
+
+    def cmdloop(self):
+        """Exit subcmd with Ctrl+C."""
+        try:
+            super(PlayCommand, self).cmdloop()
+        except KeyboardInterrupt as e:
+            self.do_stop()
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
