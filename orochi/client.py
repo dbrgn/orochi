@@ -156,7 +156,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
         print('Results for "{}":'.format(s))
         wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
-        mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m)')
+        mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
 
         self.mixes = {}
         for i, mix in enumerate(mixes, 1):
@@ -166,7 +166,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             prefix = ' {0})'.format(i).ljust(5)
             hours = mix['duration'] // 60 // 60
             minutes = (mix['duration'] // 60) % 60
-            mix_info = mix_info_tpl.substitute(name=mix['name'],
+            mix_info = mix_info_tpl.substitute(name=mix['name'], user=mix['user']['login'],
                     trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
             print(prefix + wrapper.fill(mix_info))
             print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
@@ -359,9 +359,13 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_status(self, s=''):
         track = self.status['track']
-        info = 'Now playing "{0[name]}" by "{0[performer]}", ' + \
-               'from the album "{0[release_name]}" ({0[year]}).'
-        print(info.format(track))
+        parts = []
+        parts.append('Now playing "{0[name]}" by "{0[performer]}"'.format(track))
+        if track['release_name']:
+            parts.append('from the album "{0[release_name]}"'.format(track))
+        if track['year']:
+            parts.append('({0[year]})'.format(track))
+        print(' '.join(parts) + '.')
 
     def help_status(self):
         print('Show the status of the currently playing song.')
