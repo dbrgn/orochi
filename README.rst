@@ -1,7 +1,7 @@
 Orochi – 8tracks.com client
 ===========================
 
-**Warning: Alpha quality!**
+**Warning: Beta quality!**
 
 .. image:: https://secure.travis-ci.org/dbrgn/orochi.png?branch=master
     :alt: Build status
