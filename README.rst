@@ -62,6 +62,8 @@ Available commands (play mode menu)::
         Skip to next mix.
     status / s:
         Show the status of the currently playing song.
+    mix_info:
+        Show information about the currently playing mix.
     volume / v:
         Syntax: volume <amount>
         Change playback volume. The argument must be a number between 0 and 100.

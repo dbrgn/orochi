@@ -141,7 +141,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             self.intro = intro
         try:
             super(Client, self).cmdloop()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             print()  # Newline
             self.cmdloop(intro='')
 
@@ -256,7 +256,7 @@ class PlayCommand(cmd.Cmd, object):
         """Exit subcmd with Ctrl+C."""
         try:
             super(PlayCommand, self).cmdloop()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             self.do_stop()
 
     def emptyline(self):
@@ -369,6 +369,17 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_status(self):
         print('Show the status of the currently playing song.')
+
+    def do_mix_info(self, s=''):
+        mix = self.api.get_mix_with_id(self.mix_id)
+        ansi_bold = '\033[1m'
+        ansi_normal = '\033[0m'
+        print('{0}{1}{2}'.format(ansi_bold, mix['name'], ansi_normal))
+        print('{0}'.format(mix['description']))
+        print('http://8tracks.com{0}'.format(mix['path']))
+
+    def help_mix_info(self):
+        print('Show information about the currently playing mix.')
 
     def do_debug(self, s=''):
         try:
