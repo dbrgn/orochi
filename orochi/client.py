@@ -12,6 +12,7 @@ from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
 from .player import MPlayer, TerminatedException
+from .colors import bold
 
 
 # Tuple containing prefix, main text and suffix for command line prompt
@@ -166,7 +167,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             prefix = ' {0})'.format(i).ljust(5)
             hours = mix['duration'] // 60 // 60
             minutes = (mix['duration'] // 60) % 60
-            mix_info = mix_info_tpl.substitute(name=mix['name'], user=mix['user']['login'],
+            mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
                     trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
             print(prefix + wrapper.fill(mix_info))
             print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
@@ -360,9 +361,14 @@ class PlayCommand(cmd.Cmd, object):
     def do_status(self, s=''):
         track = self.status['track']
         parts = []
-        parts.append('Now playing "{0[name]}" by "{0[performer]}"'.format(track))
+        bold_track = {
+            'name': bold(track['name']),
+            'performer': bold(track['performer']),
+            'release_name': bold(track['release_name']),
+        }
+        parts.append('Now playing {0[name]} by {0[performer]}'.format(bold_track))
         if track['release_name']:
-            parts.append('from the album "{0[release_name]}"'.format(track))
+            parts.append('from the album {0[release_name]}'.format(bold_track))
         if track['year']:
             parts.append('({0[year]})'.format(track))
         print(' '.join(parts) + '.')
@@ -372,9 +378,7 @@ class PlayCommand(cmd.Cmd, object):
 
     def do_mix_info(self, s=''):
         mix = self.api.get_mix_with_id(self.mix_id)
-        ansi_bold = '\033[1m'
-        ansi_normal = '\033[0m'
-        print('{0}{1}{2}'.format(ansi_bold, mix['name'], ansi_normal))
+        print(bold(mix['name']))
         print('{0}'.format(mix['description']))
         print('http://8tracks.com{0}'.format(mix['path']))
 
