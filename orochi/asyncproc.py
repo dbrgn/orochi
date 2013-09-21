@@ -81,15 +81,16 @@ def with_timeout(timeout, func, *args, **kwargs):
             raise Timeout("Function call took too long", func, timeout)
     finally:
         signal.alarm(0)
-        signal.signal(signal.SIGALRM, oldhandler)
-        if oldalarm != 0:
-            t1 = time.time()
-            remaining = oldalarm - int(t1 - t0 + 0.5)
-            if remaining <= 0:
-                # The old alarm has expired.
-                os.kill(os.getpid(), signal.SIGALRM)
-            else:
-                signal.alarm(remaining)
+        if oldhandler is not None:
+            signal.signal(signal.SIGALRM, oldhandler)
+            if oldalarm != 0:
+                t1 = time.time()
+                remaining = oldalarm - int(t1 - t0 + 0.5)
+                if remaining <= 0:
+                    # The old alarm has expired.
+                    os.kill(os.getpid(), signal.SIGALRM)
+                else:
+                    signal.alarm(remaining)
 
     return retval
 
