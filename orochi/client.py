@@ -364,11 +364,10 @@ class PlayCommand(cmd.Cmd, object):
         bold_track = {
             'name': bold(track['name']),
             'performer': bold(track['performer']),
-            'release_name': bold(track['release_name']),
         }
         parts.append('Now playing {0[name]} by {0[performer]}'.format(bold_track))
         if track['release_name']:
-            parts.append('from the album {0[release_name]}'.format(bold_track))
+            parts.append('from the album {}'.format(bold(track['release_name'])))
         if track['year']:
             parts.append('({0[year]})'.format(track))
         print(' '.join(parts) + '.')

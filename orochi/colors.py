@@ -9,7 +9,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 # ANSI escape sequences
 
 ANSI_BOLD = '\033[1m'
-ANSI_NORMAL = '\033[0m'
+ANSI_NORMAL = '\033[22m'
 
 
 # Helper functions
