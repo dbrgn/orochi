@@ -362,12 +362,12 @@ class PlayCommand(cmd.Cmd, object):
         track = self.status['track']
         parts = []
         bold_track = {
-            'name': bold(track['name']),
-            'performer': bold(track['performer']),
+            'name': bold(track['name'].strip()),
+            'performer': bold(track['performer'].strip()),
         }
         parts.append('Now playing {0[name]} by {0[performer]}'.format(bold_track))
         if track['release_name']:
-            parts.append('from the album {}'.format(bold(track['release_name'])))
+            parts.append('from the album {}'.format(bold(track['release_name'].strip())))
         if track['year']:
             parts.append('({0[year]})'.format(track))
         print(' '.join(parts) + '.')
