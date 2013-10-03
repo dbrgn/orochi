@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 
-def test_asyncproc():
+def test_with_timeout():
     """Test that with_timeout doesn't fail on exit."""
 
     code = """
