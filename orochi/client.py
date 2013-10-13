@@ -234,7 +234,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: play <mix>')
         print('The <mix> argument can either be a search result number from the last search,')
         print('a specific 8tracks mix ID or a mix URL from the website.')
-        
+
     def do_login(self, s):
         if not s or len(s.split()) < 2:
             self.help_login()
@@ -255,11 +255,11 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: login <username> <password>')
         print('Log in to your 8tracks account.')
         print('Credentials are saved in config file to autologin on next start.')
-        
+
     def get_logged(self):
     #Return True if user is logged in.
         return self.logged
-    
+
     def do_liked(self, s):
         if not self.logged:
             print('You must first be logged in. Use login command.')
@@ -444,7 +444,7 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_mix_info(self):
         print('Show information about the currently playing mix.')
-        
+
     def do_like_mix(self, s=''):
         if not self.parent_cmd.get_logged():
             print('You must first be logged in. Use login command.')
@@ -520,7 +520,7 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_v(self):
         print('Alias for "volume".')
-        
+
     def do_l(self, *args, **kwargs):
         self.do_like_mix(*args, **kwargs)
 

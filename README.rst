@@ -50,11 +50,11 @@ Available commands (main menu)::
         Exit the interpreter.
         You can also use the Ctrl-D shortcut.
     login:
-	Syntax: login <username> <password>
+        Syntax: login <username> <password>
         Log in to your 8tracks account.
         Credentials are saved in config file to autologin on next start.
     liked:
-	Show liked mixes (You must be logged in).
+        Show liked mixes (You must be logged in).
 
 Available commands (play mode menu)::
 
@@ -74,13 +74,13 @@ Available commands (play mode menu)::
         Syntax: volume <amount>
         Change playback volume. The argument must be a number between 0 and 100.
     like_mix / l:
-	Like the currently playing mix (You must be logged in).
+        Like the currently playing mix (You must be logged in).
     unlike_mix / ul:
-	Un-like the currently playing mix (You must be logged in).
+        Un-like the currently playing mix (You must be logged in).
     fav_track / f:
-	Favoriting the currently playing track (You must be logged in).
+        Favoriting the currently playing track (You must be logged in).
     unfav_track / uf:
-	Un-favoriting the currently playing track (You must be logged in).
+        Un-favoriting the currently playing track (You must be logged in).
 
 
 Configuration

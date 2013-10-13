@@ -63,9 +63,8 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data
-      
+
     def _post(self, resource, params={}, **kwargs):
-      
         r = self.s.post(self.base_url + resource, params=params, **kwargs)
         try:
             r.raise_for_status()
@@ -96,7 +95,7 @@ class EightTracksAPI(object):
             data = self._get('sets/new.json')
             self.play_token = data['play_token']
         return self.play_token
-      
+
     def _obtain_user_token(self, payload, force_refresh=False):
         """Return a new user token.
 
@@ -108,7 +107,7 @@ class EightTracksAPI(object):
                 Whether to ignore a cached user token and force the requesting
                 of a new one. Default: False.
             payload:
-		Credentials needed to log in.
+                Credentials needed to log in.
 
         Returns:
             A user token as a string.
@@ -118,7 +117,8 @@ class EightTracksAPI(object):
             #Logging out before trying to login. If not used, logging in with
             #an other username won't work.
             self._post('logout')
-            data = self._post('sessions.json', auth = (payload['login'], payload['password']))
+            data = self._post('sessions.json',
+                auth=(payload['login'], payload['password']))
             self.user_token = data['user_token']
         return self.user_token
 
@@ -184,7 +184,7 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data['mix']
-      
+
     def get_mix_liked(self, payload):
         """Return the liked mixes for current user.
 
@@ -307,7 +307,7 @@ class EightTracksAPI(object):
             'mix_id': mix_id,
         })
         return data['next_mix']
-      
+
     def like_mix(self, mix_id):
         """Like the current mix.
 
