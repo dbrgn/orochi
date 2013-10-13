@@ -20,6 +20,7 @@ class EightTracksAPI(object):
             'Accept': 'application/json',
         })
         self.play_token = None
+        self.user_token = None
 
     def _get(self, resource, params={}, **kwargs):
         """Do a GET request to the specified API resource.
@@ -62,6 +63,19 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data
+      
+    def _post(self, resource, params={}, **kwargs):
+      
+        r = self.s.post(self.base_url + resource, params=params, **kwargs)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            e.args = e.args + (r.json(),)
+            raise e
+        data = r.json()
+        if 'errors' in data and data['errors'] is not None:
+            raise APIError(data['errors'], data)
+        return data
 
     def _obtain_play_token(self, force_refresh=False):
         """Return a new play token.
@@ -82,6 +96,31 @@ class EightTracksAPI(object):
             data = self._get('sets/new.json')
             self.play_token = data['play_token']
         return self.play_token
+      
+    def _obtain_user_token(self, payload, force_refresh=False):
+        """Return a new user token.
+
+        If a user token has already been requested before, this token is
+        returned, as long as ``force_refresh`` is ``False``.
+
+        Args:
+            force_refresh:
+                Whether to ignore a cached user token and force the requesting
+                of a new one. Default: False.
+            payload:
+		Credentials needed to log in.
+
+        Returns:
+            A user token as a string.
+
+        """
+        if self.user_token is None or force_refresh:
+            #Logging out before trying to login. If not used, logging in with
+            #an other username won't work.
+            self._post('logout')
+            data = self._post('sessions.json', auth = (payload['login'], payload['password']))
+            self.user_token = data['user_token']
+        return self.user_token
 
     def search_mix(self, query, sort='hot', page=1, per_page=10):
         """Search for a mix.
@@ -145,6 +184,20 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data['mix']
+      
+    def get_mix_liked(self, payload):
+        """Return the liked mixes for current user.
+
+        Args:
+            username:
+                The 8tracks username of the user currently logged in.
+
+        Returns:
+            The list of liked mixes.
+
+        """
+        data = self._get('/users/{token}/mixes.json?view=liked'.format(token=payload['login']))
+        return data['mixes']
 
     def _playback_control(self, mix_id, command):
         """Used to do play/next/skip requests.
@@ -254,3 +307,39 @@ class EightTracksAPI(object):
             'mix_id': mix_id,
         })
         return data['next_mix']
+      
+    def like_mix(self, mix_id):
+        """Like the current mix.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+        """
+        self._post('mixes/{token}/like.json'.format(token=mix_id))
+
+    def unlike_mix(self, mix_id):
+        """Un-like the current mix.
+
+        Args:
+            mix_id:
+                The currently playing 8tracks mix id.
+        """
+        self._post('mixes/{token}/unlike.json'.format(token=mix_id))
+
+    def fav_track(self, track_id):
+        """Favorite the current track.
+
+        Args:
+            track_id:
+                The currently playing 8tracks track id.
+        """
+        self._post('tracks/{token}/fav.json'.format(token=track_id))
+
+    def unfav_track(self, track_id):
+        """Un-favorite the current track.
+
+        Args:
+            track_id:
+                The currently playing 8tracks track id.
+        """
+        self._post('tracks/{token}/unfav.json'.format(token=track_id))

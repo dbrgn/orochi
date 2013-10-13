@@ -130,6 +130,16 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.mixes = {}
         self.volume = None
         self.config = ConfigFile()
+        #Initiate payload and try to login
+        self.payload = {'login': self.config['username'],
+                'password': self.config['password']}
+        if self.config['username'] and self.config['password']:
+            try:
+                self.api._obtain_user_token(self.payload)
+                print('Logged in as %s' % self.config['username'])
+                self.logged = True
+            except HTTPError:
+                print('Login failed !')
         return super(Client, self).preloop()
 
     def precmd(self, line):
@@ -224,6 +234,57 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: play <mix>')
         print('The <mix> argument can either be a search result number from the last search,')
         print('a specific 8tracks mix ID or a mix URL from the website.')
+        
+    def do_login(self, s):
+        if not s or len(s.split()) < 2:
+            self.help_login()
+
+        else:
+            login = s.split()
+            self.config['username'] = self.payload['login'] = login[0]
+            self.config['password'] = self.payload['password'] = login[1]
+            try:
+                self.api._obtain_user_token(self.payload, force_refresh=True)
+                print('Successfully logged in !')
+                self.logged = True
+            except HTTPError:
+                self.logged = None
+                print('Unable to login try again.')
+
+    def help_login(self):
+        print('Syntax: login <username> <password>')
+        print('Log in to your 8tracks account.')
+        print('Credentials are saved in config file to autologin on next start.')
+        
+    def get_logged(self):
+    #Return True if user is logged in.
+        return self.logged
+    
+    def do_liked(self, s):
+        if not self.logged:
+            print('You must first be logged in. Use login command.')
+        else:
+            mixes = self.api.get_mix_liked(self.payload)
+
+            print('Results for "{}":'.format(s))
+            wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
+            mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
+
+            self.mixes = {}
+            for i, mix in enumerate(mixes, 1):
+                # Cache mix ids
+                self.mixes[i] = mix
+                # Print line
+                prefix = ' {0})'.format(i).ljust(5)
+                hours = mix['duration'] // 60 // 60
+                minutes = (mix['duration'] // 60) % 60
+                mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
+                        trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
+                print(prefix + wrapper.fill(mix_info))
+                print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
+
+    def help_liked(self):
+        print('Show liked mixes (You must be logged in).')
 
 
 class PlayCommand(cmd.Cmd, object):
@@ -383,6 +444,42 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_mix_info(self):
         print('Show information about the currently playing mix.')
+        
+    def do_like_mix(self, s=''):
+        if not self.parent_cmd.get_logged():
+            print('You must first be logged in. Use login command.')
+        else:
+            self.api.like_mix(self.mix_id)
+
+    def help_like_mix(self):
+        print('Like the currently playing mix (You must be logged in).')
+
+    def do_unlike_mix(self, s=''):
+        if not self.parent_cmd.get_logged():
+            print('You must first be logged in. Use login command.')
+        else:
+            self.api.unlike_mix(self.mix_id)
+
+    def help_unlike_mix(self):
+        print('Un-like the currently playing mix (You must be logged in).')
+
+    def do_fav_track(self, s=''):
+        if not self.parent_cmd.get_logged():
+            print('You must first be logged in. Use login command.')
+        else:
+            self.api.fav_track(self.status['track']['id'])
+
+    def help_fav_track(self):
+        print('Favoriting the currently playing track (You must be logged in).')
+
+    def do_unfav_track(self, s=''):
+        if not self.parent_cmd.get_logged():
+            print('You must first be logged in. Use login command.')
+        else:
+            self.api.unfav_track(self.status['track']['id'])
+
+    def help_unfav_track(self):
+        print('Un-favoriting the currently playing track (You must be logged in).')
 
     def do_debug(self, s=''):
         try:
@@ -423,6 +520,30 @@ class PlayCommand(cmd.Cmd, object):
 
     def help_v(self):
         print('Alias for "volume".')
+        
+    def do_l(self, *args, **kwargs):
+        self.do_like_mix(*args, **kwargs)
+
+    def help_l(self):
+        print('Alias for "like_mix".')
+
+    def do_ul(self, *args, **kwargs):
+        self.do_unlike_mix(*args, **kwargs)
+
+    def help_ul(self):
+        print('Alias for "unlike_mix".')
+
+    def do_f(self, *args, **kwargs):
+        self.do_fav_track(*args, **kwargs)
+
+    def help_f(self):
+        print('Alias for "fav_track".')
+
+    def do_uf(self, *args, **kwargs):
+        self.do_unfav_track(*args, **kwargs)
+
+    def help_uf(self):
+        print('Alias for "unfav_track".')
 
 
 def main():
