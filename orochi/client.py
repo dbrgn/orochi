@@ -131,6 +131,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.volume = None
         self.config = ConfigFile()
         self._logged_in = None
+        self._user_name = ''
+        self._password = ''
         #Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'] + " " + self.config['password'])
@@ -243,14 +245,14 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         else:
             login = s.split(' ', 1)
             if self.config['autologin']:
-                self.config['username'] = username = login[0]
-                self.config['password'] = password = login[1]
+                self.config['username'] = self._user_name = login[0]
+                self.config['password'] = self._password = login[1]
             else:
-                username = login[0]
-                password = login[1]
+                self._user_name = login[0]
+                self._password = login[1]
             try:
-                self.api._obtain_user_token(username, password, force_refresh=True)
-                print('Successfull logged in as %s !' % username)
+                self.api._obtain_user_token(self._user_name, self._password, force_refresh=True)
+                print('Successfull logged in as %s !' % self._user_name)
                 self._logged_in = True
             except HTTPError:
                 self._logged_in = None
@@ -268,6 +270,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             self.help_autologin()
         elif s == 'on':
             self.config['autologin'] = 'True'
+            self.config['username'] = self._user_name
+            self.config['password'] = self._password
         elif s == 'off':
             self.config['autologin'] = ''
             self.config['password'] = ''
@@ -278,8 +282,6 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Toggle autologin on start (off by default).')
         print('WARNING: password will be saved in plain text.')
         print('When toggled off, password and username are deleted from config.')
-        #TODO: Allow toggling autologin on and saving credentials when we want.
-        print('To save credentials in config, autologin must be toggled on before login.')
 
     def get_login_status(self):
     #Return True if user is logged in.
