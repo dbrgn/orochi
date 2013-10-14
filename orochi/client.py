@@ -295,7 +295,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
             print('Results for "{}":'.format(s))
             wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
-            mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
+            mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ' +
+                                    '${minutes}m, by ${user})')
 
             self.mixes = {}
             for i, mix in enumerate(mixes, 1):
@@ -305,8 +306,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 prefix = ' {0})'.format(i).ljust(5)
                 hours = mix['duration'] // 60 // 60
                 minutes = (mix['duration'] // 60) % 60
-                mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
-                        trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
+                mix_info = mix_info_tpl.substitute(
+                        name=bold(mix['name']), user=mix['user']['login'],
+                        trackcount=mix['tracks_count'],
+                        hours=hours, minutes=minutes)
                 print(prefix + wrapper.fill(mix_info))
                 print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
