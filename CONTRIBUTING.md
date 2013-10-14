@@ -8,11 +8,11 @@ contribution guidelines though:
   committing and pushing your changes.
 - Please follow the [coding
   guidelines](https://github.com/dbrgn/orochi#coding-guidelines).
-- Use meaningful commit messages: First line of your commit message should be
-  50 characters or less. After the first line of the commit message, add a
-  blank line and then a more detailed explanation (when relevant).
-  [This](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) is
-  a nice blog post concerning git commit messages.
+- Use meaningful commit messages: First line of your commit message should be a
+  very short summary (ideally 50 characters or less). After the first line of
+  the commit message, add a blank line and then a more detailed explanation (when
+  relevant).  [This](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+  is a nice blog post concerning git commit messages.
 - Add yourself to the [AUTHORS file](https://github.com/dbrgn/orochi/blob/master/AUTHORS).
 
 The following items make my life easier, but are optional:
