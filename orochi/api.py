@@ -116,11 +116,10 @@ class EightTracksAPI(object):
 
         """
         if self._user_token is None or force_refresh:
-            #Logging out before trying to login. If not used, logging in with
-            #an other username won't work.
+            # Logging out before trying to login. Otherwise logging in with a
+            # new username won't work.
             self._post('logout')
-            data = self._post('sessions.json',
-                auth=(username, password))
+            data = self._post('sessions.json', auth=(username, password))
             self._user_name = username
             self._user_token = data['user_token']
         return self._user_token

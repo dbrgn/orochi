@@ -133,7 +133,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self._logged_in = None
         self._user_name = ''
         self._password = ''
-        #Try to login if autologin is on.
+        # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'] + " " + self.config['password'])
         return super(Client, self).preloop()
@@ -241,7 +241,6 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         """
         if not s or len(s.split()) < 2:
             self.help_login()
-
         else:
             login = s.split(' ', 1)
             if self.config['autologin']:
@@ -252,14 +251,14 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self._password = login[1]
             try:
                 self.api._obtain_user_token(self._user_name, self._password, force_refresh=True)
-                print('Successfull logged in as %s !' % self._user_name)
+                print('Successfull logged in as %s!' % self._user_name)
                 self._logged_in = True
             except HTTPError:
                 self._logged_in = None
-                print('Unable to login try again.')
+                print('Unable to login, please try again.')
             except ConnectionError:
                 self._logged_in = None
-                print('*** Couldn\'t connect to HTTP Host, connection error.')
+                print("*** Could not connect to HTTP Host, connection error.")
 
     def help_login(self):
         print('Syntax: login <username> <password>')
@@ -284,7 +283,6 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('When toggled off, password and username are deleted from config.')
 
     def get_login_status(self):
-    #Return True if user is logged in.
         return self._logged_in
 
     def do_liked_mixes(self, s):
@@ -314,7 +312,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
     def help_liked_mixes(self):
-        print('Show liked mixes (You must be logged in).')
+        print('List liked mixes (login required).')
 
 
 class PlayCommand(cmd.Cmd, object):
@@ -482,7 +480,7 @@ class PlayCommand(cmd.Cmd, object):
             self.api.like_mix(self.mix_id)
 
     def help_like_mix(self):
-        print('Like the currently playing mix (You must be logged in).')
+        print('Like the currently playing mix (login required).')
 
     def do_unlike_mix(self, s=''):
         if not self.parent_cmd.get_login_status():
@@ -491,7 +489,7 @@ class PlayCommand(cmd.Cmd, object):
             self.api.unlike_mix(self.mix_id)
 
     def help_unlike_mix(self):
-        print('Un-like the currently playing mix (You must be logged in).')
+        print('Un-like the currently playing mix (login required).')
 
     def do_fav_track(self, s=''):
         if not self.parent_cmd.get_login_status():
@@ -500,7 +498,7 @@ class PlayCommand(cmd.Cmd, object):
             self.api.fav_track(self.status['track']['id'])
 
     def help_fav_track(self):
-        print('Favoriting the currently playing track (You must be logged in).')
+        print('Favorite the currently playing track (login required).')
 
     def do_unfav_track(self, s=''):
         if not self.parent_cmd.get_login_status():
@@ -509,7 +507,7 @@ class PlayCommand(cmd.Cmd, object):
             self.api.unfav_track(self.status['track']['id'])
 
     def help_unfav_track(self):
-        print('Un-favoriting the currently playing track (You must be logged in).')
+        print('Un-favorite the currently playing track (login required).')
 
     def do_debug(self, s=''):
         try:

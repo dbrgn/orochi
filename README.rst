@@ -58,7 +58,7 @@ Available commands (main menu)::
         WARNING: password will be saved in plain text.
         When toggled off, password and username are deleted from config.
     liked_mixes:
-        Show liked mixes (You must be logged in).
+        List liked mixes (login required).
 
 Available commands (play mode menu)::
 
@@ -78,13 +78,13 @@ Available commands (play mode menu)::
         Syntax: volume <amount>
         Change playback volume. The argument must be a number between 0 and 100.
     like_mix / l:
-        Like the currently playing mix (You must be logged in).
+        Like the currently playing mix (login required).
     unlike_mix / ul:
-        Un-like the currently playing mix (You must be logged in).
+        Un-like the currently playing mix (login required).
     fav_track / f:
-        Favoriting the currently playing track (You must be logged in).
+        Favorite the currently playing track (login required).
     unfav_track / uf:
-        Un-favoriting the currently playing track (You must be logged in).
+        Un-favorite the currently playing track (login required).
 
 
 Configuration
