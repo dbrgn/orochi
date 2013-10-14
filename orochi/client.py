@@ -48,7 +48,7 @@ class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
 
-    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password']
+    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password', 'autologin']
 
     def __init__(self, filename=None):
         if not filename:
@@ -130,16 +130,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.mixes = {}
         self.volume = None
         self.config = ConfigFile()
-        #Initiate payload and try to login
-        self.payload = {'login': self.config['username'],
-                'password': self.config['password']}
-        if self.config['username'] and self.config['password']:
-            try:
-                self.api._obtain_user_token(self.payload)
-                print('Logged in as %s' % self.config['username'])
-                self.logged = True
-            except HTTPError:
-                print('Login failed !')
+        self._logged_in = None
+        #Try to login if autologin is on.
+        if self.config['username'] and self.config['password'] and self.config['autologin']:
+            self.do_login(self.config['username'] + " " + self.config['password'])
         return super(Client, self).preloop()
 
     def precmd(self, line):
@@ -236,35 +230,66 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('a specific 8tracks mix ID or a mix URL from the website.')
 
     def do_login(self, s):
+        """
+        Raises:
+            requests.exceptions.HTTPError:
+                Raised if the request fails or server return a non-200 status code.
+            requests.exceptions.ConnectionError:
+                Raised if connection error.
+        """
         if not s or len(s.split()) < 2:
             self.help_login()
 
         else:
-            login = s.split()
-            self.config['username'] = self.payload['login'] = login[0]
-            self.config['password'] = self.payload['password'] = login[1]
+            login = s.split(' ', 1)
+            if self.config['autologin']:
+                self.config['username'] = username = login[0]
+                self.config['password'] = password = login[1]
+            else:
+                username = login[0]
+                password = login[1]
             try:
-                self.api._obtain_user_token(self.payload, force_refresh=True)
-                print('Successfully logged in !')
-                self.logged = True
+                self.api._obtain_user_token(username, password, force_refresh=True)
+                print('Successfull logged in as %s !' % username)
+                self._logged_in = True
             except HTTPError:
-                self.logged = None
+                self._logged_in = None
                 print('Unable to login try again.')
+            except ConnectionError:
+                self._logged_in = None
+                print('*** Couldn\'t connect to HTTP Host, connection error.')
 
     def help_login(self):
         print('Syntax: login <username> <password>')
         print('Log in to your 8tracks account.')
-        print('Credentials are saved in config file to autologin on next start.')
 
-    def get_logged(self):
+    def do_autologin(self, s):
+        if not s or s not in ('on', 'off'):
+            self.help_autologin()
+        elif s == 'on':
+            self.config['autologin'] = 'True'
+        elif s == 'off':
+            self.config['autologin'] = ''
+            self.config['password'] = ''
+            self.config['username'] = ''
+
+    def help_autologin(self):
+        print('Syntax: autologin on|off')
+        print('Toggle autologin on start (off by default).')
+        print('WARNING: password will be saved in plain text.')
+        print('When toggled off, password and username are deleted from config.')
+        #TODO: Allow toggling autologin on and saving credentials when we want.
+        print('To save credentials in config, autologin must be toggled on before login.')
+
+    def get_login_status(self):
     #Return True if user is logged in.
-        return self.logged
+        return self._logged_in
 
-    def do_liked(self, s):
-        if not self.logged:
+    def do_liked_mixes(self, s):
+        if not self._logged_in:
             print('You must first be logged in. Use login command.')
         else:
-            mixes = self.api.get_mix_liked(self.payload)
+            mixes = self.api.get_liked_mixes()
 
             print('Results for "{}":'.format(s))
             wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
@@ -283,7 +308,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print(prefix + wrapper.fill(mix_info))
                 print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
-    def help_liked(self):
+    def help_liked_mixes(self):
         print('Show liked mixes (You must be logged in).')
 
 
@@ -446,7 +471,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Show information about the currently playing mix.')
 
     def do_like_mix(self, s=''):
-        if not self.parent_cmd.get_logged():
+        if not self.parent_cmd.get_login_status():
             print('You must first be logged in. Use login command.')
         else:
             self.api.like_mix(self.mix_id)
@@ -455,7 +480,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Like the currently playing mix (You must be logged in).')
 
     def do_unlike_mix(self, s=''):
-        if not self.parent_cmd.get_logged():
+        if not self.parent_cmd.get_login_status():
             print('You must first be logged in. Use login command.')
         else:
             self.api.unlike_mix(self.mix_id)
@@ -464,7 +489,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Un-like the currently playing mix (You must be logged in).')
 
     def do_fav_track(self, s=''):
-        if not self.parent_cmd.get_logged():
+        if not self.parent_cmd.get_login_status():
             print('You must first be logged in. Use login command.')
         else:
             self.api.fav_track(self.status['track']['id'])
@@ -473,7 +498,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Favoriting the currently playing track (You must be logged in).')
 
     def do_unfav_track(self, s=''):
-        if not self.parent_cmd.get_logged():
+        if not self.parent_cmd.get_login_status():
             print('You must first be logged in. Use login command.')
         else:
             self.api.unfav_track(self.status['track']['id'])

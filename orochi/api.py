@@ -20,7 +20,7 @@ class EightTracksAPI(object):
             'Accept': 'application/json',
         })
         self.play_token = None
-        self.user_token = None
+        self._user_token = None
 
     def _get(self, resource, params={}, **kwargs):
         """Do a GET request to the specified API resource.
@@ -96,7 +96,7 @@ class EightTracksAPI(object):
             self.play_token = data['play_token']
         return self.play_token
 
-    def _obtain_user_token(self, payload, force_refresh=False):
+    def _obtain_user_token(self, username, password, force_refresh=False):
         """Return a new user token.
 
         If a user token has already been requested before, this token is
@@ -106,21 +106,24 @@ class EightTracksAPI(object):
             force_refresh:
                 Whether to ignore a cached user token and force the requesting
                 of a new one. Default: False.
-            payload:
-                Credentials needed to log in.
+            username:
+                Username needed to log in.
+            password:
+                Password needed to log in.
 
         Returns:
             A user token as a string.
 
         """
-        if self.user_token is None or force_refresh:
+        if self._user_token is None or force_refresh:
             #Logging out before trying to login. If not used, logging in with
             #an other username won't work.
             self._post('logout')
             data = self._post('sessions.json',
-                auth=(payload['login'], payload['password']))
-            self.user_token = data['user_token']
-        return self.user_token
+                auth=(username, password))
+            self._user_name = username
+            self._user_token = data['user_token']
+        return self._user_token
 
     def search_mix(self, query, sort='hot', page=1, per_page=10):
         """Search for a mix.
@@ -185,18 +188,14 @@ class EightTracksAPI(object):
             raise APIError(data['errors'], data)
         return data['mix']
 
-    def get_mix_liked(self, payload):
+    def get_liked_mixes(self):
         """Return the liked mixes for current user.
-
-        Args:
-            username:
-                The 8tracks username of the user currently logged in.
 
         Returns:
             The list of liked mixes.
 
         """
-        data = self._get('/users/{token}/mixes.json?view=liked'.format(token=payload['login']))
+        data = self._get('/users/{token}/mixes.json?view=liked'.format(token=self._user_name))
         return data['mixes']
 
     def _playback_control(self, mix_id, command):

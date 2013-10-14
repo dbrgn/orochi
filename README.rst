@@ -52,8 +52,13 @@ Available commands (main menu)::
     login:
         Syntax: login <username> <password>
         Log in to your 8tracks account.
-        Credentials are saved in config file to autologin on next start.
-    liked:
+    autologin:
+        Syntax: autologin on|off
+        Toggle autologin on start (off by default).
+        WARNING: password will be saved in plain text.
+        When toggled off, password and username are deleted from config.
+        To save credentials in config, autologin must be toggled on before login.
+    liked_mixes:
         Show liked mixes (You must be logged in).
 
 Available commands (play mode menu)::
