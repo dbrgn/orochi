@@ -41,7 +41,33 @@ Available commands (main menu)::
 
     search:
         Syntax: search <searchterm>
-        Search for a mix. You can then play a mix with the "play" command.
+        Search for a mix by keyword.
+        You can then play a mix with the "play" command.
+        Validate with empty line go to next page results.
+    search_tag:
+        Syntax: search <tag>
+        Search for a mix by tag.
+        You can then play a mix with the "play" command.
+        Validate with empty line go to next page results.
+    search_tags:
+        Syntax: search <tags>
+        Search for a mix by tags.
+        You can then play a mix with the "play" command.
+        Validate with empty line go to next page results.
+    search_user:
+        Syntax: search <username>
+        Search for a mix by user.
+        You can then play a mix with the "play" command.
+        Validate with empty line go to next page results.
+    search:
+        Syntax: search <username>
+        Search for a mix liked by user.
+        You can then play a mix with the "play" command.
+        Validate with empty line go to next page results.
+    search_options:
+        Syntax: search_options recent|popular|hot <n>
+        Configure search to show <n> results per page and sort by recent|popular|hot.
+        Sorting options only works for tag(s) search.
     play:
         Syntax: play <mix>
         Play the nth mix from the last search results.
@@ -59,6 +85,8 @@ Available commands (main menu)::
         When toggled off, password and username are deleted from config.
     liked_mixes:
         List liked mixes (login required).
+        Validate with empty line go to next page results.
+
 
 Available commands (play mode menu)::
 

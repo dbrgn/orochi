@@ -124,31 +124,53 @@ class EightTracksAPI(object):
             self._user_token = data['user_token']
         return self._user_token
 
-    def search_mix(self, query, sort='hot', page=1, per_page=10):
-        """Search for a mix.
+    def search_mix(self, query_type, query, sort, page, per_page):
+        """Search for a mix by term, tag, tags, user, user_liked or liked_by_user.
 
         Args:
+            query_type:
+                The type of query. Possible values : tag, tags, user,
+                user_liked, liked_by_user.
             query:
                 The search term to search for.
             sort:
                 The sort order. Possible values: recent, popular, hot.
-                Default: 'hot'.
+                Only works for tag search.
             page:
                 Which result page to return, if more than ``per_page`` are
                 found.
             per_page:
-                How many mixes to return per page. Default: 10.
+                How many mixes to return per page.
 
         Returns:
             The list of matching mixes.
 
         """
-        data = self._get('mixes.json', {
-            'q': query,
-            'sort': sort,
-            'per_page': per_page,
-        })
-        return data['mixes']
+        request_arguments = {
+                'sort': sort,
+                'page': page,
+                'per_page': per_page,
+                }
+        url_arguments = 'mixes.json'
+
+        if query_type == 'tag':
+            request_arguments['tag'] = query
+        elif query_type == 'tags':
+            request_arguments['tags'] = query.replace(" ", "+")
+        elif query_type == 'user':
+            url_arguments = 'users/{username}/mixes.json'.format(username=query)
+        elif query_type == 'user_liked':
+            request_arguments['view'] = 'liked'
+            url_arguments = 'users/{username}/mixes.json'.format(username=query)
+        elif query_type == 'liked_by_user':
+            request_arguments['view'] = 'liked'
+            url_arguments = 'users/{username}/mixes.json'.format(username=self._user_name)
+        elif query_type == 'keyword':
+            request_arguments['q'] = query
+
+        data = self._get(url_arguments, request_arguments)
+
+        return data['mixes'], data['total_pages'], data['next_page']
 
     def get_mix_with_id(self, mix_id):
         """Find and return the mix with the specified ID.
@@ -186,16 +208,6 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data['mix']
-
-    def get_liked_mixes(self):
-        """Return the liked mixes for current user.
-
-        Returns:
-            The list of liked mixes.
-
-        """
-        data = self._get('/users/{token}/mixes.json?view=liked'.format(token=self._user_name))
-        return data['mixes']
 
     def _playback_control(self, mix_id, command):
         """Used to do play/next/skip requests.
