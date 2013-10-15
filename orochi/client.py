@@ -478,6 +478,7 @@ class PlayCommand(cmd.Cmd, object):
             print('You must first be logged in. Use login command.')
         else:
             self.api.like_mix(self.mix_id)
+            print('Mix liked.')
 
     def help_like_mix(self):
         print('Like the currently playing mix (login required).')
@@ -487,6 +488,7 @@ class PlayCommand(cmd.Cmd, object):
             print('You must first be logged in. Use login command.')
         else:
             self.api.unlike_mix(self.mix_id)
+            print('Mix removed from liked mixes.')
 
     def help_unlike_mix(self):
         print('Un-like the currently playing mix (login required).')
@@ -496,6 +498,7 @@ class PlayCommand(cmd.Cmd, object):
             print('You must first be logged in. Use login command.')
         else:
             self.api.fav_track(self.status['track']['id'])
+            print('Track favorited.')
 
     def help_fav_track(self):
         print('Favorite the currently playing track (login required).')
@@ -505,6 +508,7 @@ class PlayCommand(cmd.Cmd, object):
             print('You must first be logged in. Use login command.')
         else:
             self.api.unfav_track(self.status['track']['id'])
+            print('Track removed from favorites.')
 
     def help_unfav_track(self):
         print('Un-favorite the currently playing track (login required).')
