@@ -7,6 +7,8 @@ import cmd
 import json
 import signal
 from string import Template
+from getpass import getpass
+
 from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
@@ -239,19 +241,14 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             requests.exceptions.ConnectionError:
                 Raised if connection error.
         """
-        if not s or len(s.split()) < 2:
+        if not s:
             self.help_login()
         else:
-            login = s.split(' ', 1)
-            if self.config['autologin']:
-                self.config['username'] = self._user_name = login[0]
-                self.config['password'] = self._password = login[1]
-            else:
-                self._user_name = login[0]
-                self._password = login[1]
+            self._user_name = s.strip()
+            self._password = getpass('Password: ')
             try:
                 self.api._obtain_user_token(self._user_name, self._password, force_refresh=True)
-                print('Successfull logged in as %s!' % self._user_name)
+                print('Successfully logged in as %s!' % self._user_name)
                 self._logged_in = True
             except HTTPError:
                 self._logged_in = None
@@ -259,9 +256,12 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             except ConnectionError:
                 self._logged_in = None
                 print("*** Could not connect to HTTP Host, connection error.")
+            if self.config['autologin']:
+                self.config['username'] = self._user_name
+                self.config['password'] = self._password
 
     def help_login(self):
-        print('Syntax: login <username> <password>')
+        print('Syntax: login <username>')
         print('Log in to your 8tracks account.')
 
     def do_autologin(self, s):

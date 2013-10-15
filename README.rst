@@ -50,7 +50,7 @@ Available commands (main menu)::
         Exit the interpreter.
         You can also use the Ctrl-D shortcut.
     login:
-        Syntax: login <username> <password>
+        Syntax: login <username>
         Log in to your 8tracks account.
     autologin:
         Syntax: autologin on|off
