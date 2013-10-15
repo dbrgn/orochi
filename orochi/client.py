@@ -137,7 +137,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self._password = ''
         # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
-            self.do_login(self.config['username'] + " " + self.config['password'])
+            self.do_login(self.config['username'], password=self.config['password'])
         return super(Client, self).preloop()
 
     def precmd(self, line):
@@ -233,7 +233,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('The <mix> argument can either be a search result number from the last search,')
         print('a specific 8tracks mix ID or a mix URL from the website.')
 
-    def do_login(self, s):
+    def do_login(self, s, password=None):
         """
         Raises:
             requests.exceptions.HTTPError:
@@ -245,7 +245,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             self.help_login()
         else:
             self._user_name = s.strip()
-            self._password = getpass('Password: ')
+            self._password = password or getpass('Password: ')
             try:
                 self.api._obtain_user_token(self._user_name, self._password, force_refresh=True)
                 print('Successfully logged in as %s!' % self._user_name)
