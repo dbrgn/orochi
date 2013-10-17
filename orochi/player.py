@@ -69,7 +69,7 @@ class MPlayer(object):
             if 'CPLAYER: MPlayer' in self.p.read():
                 break
             elif time.time() - start > self.timeout:
-                raise RuntimeError("MPlayer didn't start inside {}s. ".format(self.timeout) +
+                raise RuntimeError("MPlayer didn't start within {}s. ".format(self.timeout) +
                                    "Something must have gone wrong.", self.p.readerr())
             else:
                 time.sleep(0.01)
@@ -143,7 +143,7 @@ class MPlayer(object):
                 break
             if time.time() - start > self.timeout:  # TODO use sigalarm or sigusr2 instead
                 self.terminate()
-                raise RuntimeError("Playback didn't start inside {}s. ".format(self.timeout) +
+                raise RuntimeError("Playback didn't start within {}s. ".format(self.timeout) +
                         "Something must have gone wrong. Is your network down?")
             time.sleep(0.1)
 
