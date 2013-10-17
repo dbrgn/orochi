@@ -232,6 +232,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             except RuntimeError as e:
                 print('*** {}'.format(e))
                 return
+            except HTTPError as e:
+                print('*** HTTP Error: {}'.format(e))
             i.prompt = get_prompt(mix)
             i.cmdloop()
 
