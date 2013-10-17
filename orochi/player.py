@@ -13,28 +13,18 @@ except ImportError:  # Python < 3.3
     from pipes import quote
 
 from .asyncproc import Process
-
-
-class TerminatedException(RuntimeError):
-    """An exception that is raised when interaction with the player is
-    attempted even if the background thread is already dead."""
-    pass
-
-
-class InitializationError(RuntimeError):
-    """Raised when initialization of player failed."""
-    pass
+from .errors import TerminatedError, InitializationError
 
 
 class DeadMPlayer(object):
     """This is a "dummy object" that replaces the reference to the mplayer
     process as soon as the process is terminated.
 
-    All it does is raising a :ex:``TerminatedException`` on any method call.
+    All it does is raising a :ex:``TerminatedError`` on any method call.
 
     """
     def __getattr__(self, attr):
-        raise TerminatedException('MPlayer has been terminated and cannot be used anymore.')
+        raise TerminatedError('MPlayer has been terminated and cannot be used anymore.')
 
 
 class MPlayer(object):
@@ -55,7 +45,8 @@ class MPlayer(object):
 
         """
         with open(os.devnull, 'w') as devnull:
-            retcode = subprocess.call(['mplayer', '--version'], stdout=devnull, stderr=devnull, shell=True)
+            command = ['mplayer', '--version']
+            retcode = subprocess.call(command, stdout=devnull, stderr=devnull, shell=True)
         if retcode == 127:
             msg = 'mplayer binary not found. Are you sure MPlayer is installed?'
             raise InitializationError(msg)

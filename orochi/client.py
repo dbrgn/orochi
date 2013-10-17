@@ -13,7 +13,8 @@ from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
-from .player import MPlayer, InitializationError, TerminatedException
+from .player import MPlayer
+from .errors import InitializationError, TerminatedError
 from .colors import bold
 
 
@@ -400,7 +401,7 @@ class PlayCommand(cmd.Cmd, object):
         try:
             self.p.stop()
             self.p.terminate()
-        except TerminatedException:
+        except TerminatedError:
             pass  # We wanted to stop the process anyways.
 
         # Return to main loop
