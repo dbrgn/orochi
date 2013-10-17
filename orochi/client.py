@@ -229,6 +229,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             except InitializationError as e:
                 print('*** Error: {}'.format(e))
                 return
+            except RuntimeError as e:
+                print('*** {}'.format(e))
+                return
             i.prompt = get_prompt(mix)
             i.cmdloop()
 
