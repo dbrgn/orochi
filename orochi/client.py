@@ -13,7 +13,7 @@ from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
-from .player import MPlayer, TerminatedException
+from .player import MPlayer, InitializationError, TerminatedException
 from .colors import bold
 
 
@@ -224,7 +224,11 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             except HTTPError:
                 print('*** Mix with id {mix_id} not found.'.format(mix_id=s))
         if is_valid:
-            i = PlayCommand(self.config, mix_id, self)
+            try:
+                i = PlayCommand(self.config, mix_id, self)
+            except InitializationError as e:
+                print('*** Error: {}'.format(e))
+                return
             i.prompt = get_prompt(mix)
             i.cmdloop()
 

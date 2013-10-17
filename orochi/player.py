@@ -6,6 +6,7 @@ import re
 import time
 import signal
 import threading
+import subprocess
 try:
     from shlex import quote
 except ImportError:  # Python < 3.3
@@ -17,6 +18,11 @@ from .asyncproc import Process
 class TerminatedException(RuntimeError):
     """An exception that is raised when interaction with the player is
     attempted even if the background thread is already dead."""
+    pass
+
+
+class InitializationError(RuntimeError):
+    """Raised when initialization of player failed."""
     pass
 
 
@@ -48,6 +54,11 @@ class MPlayer(object):
                 process.
 
         """
+        with open(os.devnull, 'w') as devnull:
+            retcode = subprocess.call(['mplayer', '--version'], stdout=devnull, stderr=devnull, shell=True)
+        if retcode == 127:
+            msg = 'mplayer binary not found. Are you sure MPlayer is installed?'
+            raise InitializationError(msg)
         self.timeout = timeout
         command = ['mplayer',
             '-slave', '-idle',
@@ -209,7 +220,7 @@ class MPlayer(object):
         """Shut down mplayer and replace the reference to the async process
         with a dummy instance that raises a :class:`RuntimeError` on any method
         call."""
-        if hasattr(self.p, 'terminate'):
+        if hasattr(self, 'p') and hasattr(self.p, 'terminate'):
             self._stop_background_thread()
             self.p.terminate()
             self.p = DeadMPlayer()
