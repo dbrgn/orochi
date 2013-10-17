@@ -208,8 +208,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         else:
             try:
                 typed_val = int(s)
-                # The 10 here really probably needs to be a config file option
-                if 0 < typed_val <= 10:
+                if typed_val in self.mixes:
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
                     is_valid = True

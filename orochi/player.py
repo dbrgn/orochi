@@ -20,7 +20,7 @@ class DeadMPlayer(object):
     """This is a "dummy object" that replaces the reference to the mplayer
     process as soon as the process is terminated.
 
-    All it does is raising a :ex:``TerminatedError`` on any method call.
+    All it does is raising a :ex:`errors.TerminatedError` on any method call.
 
     """
     def __getattr__(self, attr):
