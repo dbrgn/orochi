@@ -374,7 +374,11 @@ class PlayCommand(cmd.Cmd, object):
             self.do_next_mix()
         else:
             self.status = self.api.next_track(self.mix_id)
-            self.p.load(self.status['track']['url'])
+            try:
+                self.p.load(self.status['track']['url'])
+            except RuntimeError as e:
+                print('*** RuntimeError: {}'.format(e))
+                self.do_stop()
             self.do_status()
         print(self.prompt, end='')
         sys.stdout.flush()

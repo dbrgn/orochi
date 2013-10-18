@@ -144,7 +144,7 @@ class MPlayer(object):
             if time.time() - start > self.timeout:  # TODO use sigalarm or sigusr2 instead
                 self.terminate()
                 raise RuntimeError("Playback didn't start within {}s. ".format(self.timeout) +
-                        "Something must have gone wrong. Is your network down?")
+                        "Something must have gone wrong. Are you experiencing network problems?")
             time.sleep(0.1)
 
         # Start a background thread that checks the playback status
