@@ -234,7 +234,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 return
             except HTTPError as e:
                 print('*** HTTP Error: {}'.format(e))
-            i.prompt = get_prompt(mix)
+            i.prompt = get_prompt(mix).encode('utf8')
             i.cmdloop()
 
     def help_play(self):
