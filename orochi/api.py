@@ -97,10 +97,10 @@ class EightTracksAPI(object):
         return self.play_token
 
     def _obtain_user_token(self, username, password, force_refresh=False):
-        """Return a new user token.
+        """Request a new user token and pass it to the session header.
 
         If a user token has already been requested before, this token is
-        returned, as long as ``force_refresh`` is ``False``.
+        passed, as long as ``force_refresh`` is ``False``.
 
         Args:
             force_refresh:
@@ -111,18 +111,14 @@ class EightTracksAPI(object):
             password:
                 Password needed to log in.
 
-        Returns:
-            A user token as a string.
-
         """
         if self._user_token is None or force_refresh:
             # Logging out before trying to login. Otherwise logging in with a
             # new username won't work.
             self._post('logout')
             data = self._post('sessions.json', auth=(username, password))
-            self._user_name = username
             self._user_token = data['user_token']
-        return self._user_token
+            self.s.headers.update({'X-User-Token': self._user_token})
 
     def search_mix(self, query_type, query, sort, page, per_page):
         """Search for a mix by term, tag, user or user_liked.
