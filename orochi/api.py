@@ -125,12 +125,12 @@ class EightTracksAPI(object):
         return self._user_token
 
     def search_mix(self, query_type, query, sort, page, per_page):
-        """Search for a mix by term, tag, tags, user, user_liked or liked_by_user.
+        """Search for a mix by term, tag, user or user_liked.
 
         Args:
             query_type:
-                The type of query. Possible values : tag, tags, user,
-                user_liked, liked_by_user.
+                The type of query. Possible values : tag, user,
+                user_liked.
             query:
                 The search term to search for.
             sort:
@@ -144,31 +144,31 @@ class EightTracksAPI(object):
 
         Returns:
             The list of matching mixes.
+            The total number of results pages.
+            The next results page number.
 
         """
-        request_arguments = {
+        params = {
                 'sort': sort,
                 'page': page,
                 'per_page': per_page,
                 }
-        url_arguments = 'mixes.json'
+        resource = 'mixes.json'
 
         if query_type == 'tag':
-            request_arguments['tag'] = query
-        elif query_type == 'tags':
-            request_arguments['tags'] = query.replace(" ", "+")
+            if len(query.split(',')) < 1:
+                params['tag'] = query
+            else:
+                params['tags'] = query.replace(",", "+")
         elif query_type == 'user':
-            url_arguments = 'users/{username}/mixes.json'.format(username=query)
+            resource = 'users/{username}/mixes.json'.format(username=query)
         elif query_type == 'user_liked':
-            request_arguments['view'] = 'liked'
-            url_arguments = 'users/{username}/mixes.json'.format(username=query)
-        elif query_type == 'liked_by_user':
-            request_arguments['view'] = 'liked'
-            url_arguments = 'users/{username}/mixes.json'.format(username=self._user_name)
+            params['view'] = 'liked'
+            resource = 'users/{username}/mixes.json'.format(username=query)
         elif query_type == 'keyword':
-            request_arguments['q'] = query
+            params['q'] = query
 
-        data = self._get(url_arguments, request_arguments)
+        data = self._get(resource, params)
 
         return data['mixes'], data['total_pages'], data['next_page']
 

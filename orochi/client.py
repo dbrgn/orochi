@@ -137,13 +137,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self._logged_in = None
         self._user_name = ''
         self._password = ''
-        self._liked_results_page = 1
         self._search_term = None
         self._search_results_page = 1
         self.total_pages = None
+        self.query_type = None
 
         if not self.config['results_per_page']:
-            self.config['results_per_page'] = self._results_per_page = 20
+            self.config['results_per_page'] = self._results_per_page = 10
         elif not self.config['results_sorting']:
             self.config['results_sorting'] = self._results_sorting = 'hot'
         else:
@@ -171,87 +171,61 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
-        if self.lastcmd.startswith('search') and not self.lastcmd.startswith((
+        search_commands = ('search', 'search_tag', 'search_user',
+             'search_user_liked', 'liked_mixes')
+        if (self.lastcmd.startswith((search_commands)) and
+        self._search_results_page < self.total_pages):
+            self.show_next_page(self.lastcmd)
+        else:
+            pass
+
+    def show_next_page(self, s):
+        if s.startswith('search') and not self.lastcmd.startswith((
             'search_options',
             'search_tag',
             'search_tags',
             'search_user',
             'search_user_liked'
                     )):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_search(self._search_term)
-        elif self.lastcmd.startswith('liked_mixes'):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_liked_mixes(self)
-        elif self.lastcmd.startswith('search_tag'):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_search_tag(self._search_term)
-        elif self.lastcmd.startswith('search_tags'):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_search_tags(self._search_term)
-        elif self.lastcmd.startswith('search_user'):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_search_user(self._search_term)
-        elif self.lastcmd.startswith('search_user_liked'):
-            if self._search_results_page < self.total_pages:
-                self._search_results_page = self._next_page
-                self.do_search_user_liked(self._search_term)
-        else:
-            pass
+            self._search_results_page = self._next_page
+            self.do_search(self._search_term)
+        elif s.startswith('liked_mixes'):
+            self._search_results_page = self._next_page
+            self.do_liked_mixes(self)
+        elif s.startswith('search_tag'):
+            self._search_results_page = self._next_page
+            self.do_search_tag(self._search_term)
+        elif s.startswith('search_tags'):
+            self._search_results_page = self._next_page
+            self.do_search_tags(self._search_term)
+        elif s.startswith('search_user'):
+            self._search_results_page = self._next_page
+            self.do_search_user(self._search_term)
+        elif s.startswith('search_user_liked'):
+            self._search_results_page = self._next_page
+            self.do_search_user_liked(self._search_term)
 
     # Actual commands
 
     def do_search(self, s):
-
-        if self._search_term != s:
-            self._search_results_page = 1
-
         mixes = self.search_request(s, 'keyword')
-
         self.display_search_results(mixes, s)
 
     def help_search(self):
         print('Syntax: search <searchterm>')
         print('Search for a mix by keyword. You can then play a mix with the "play" command.')
-        print('Validate with empty line go to next page results.')
+        print('Pressing <enter> shows next page results.')
 
     def do_search_tag(self, s):
-
-        if self._search_term != s:
-            self._search_results_page = 1
-
         mixes = self.search_request(s, 'tag')
-
         self.display_search_results(mixes, s)
 
     def help_search_tag(self):
-        print('Syntax: search <tag>')
-        print('Search for a mix by tag. You can then play a mix with the "play" command.')
-        print('Validate with empty line go to next page results.')
-
-    def do_search_tags(self, s):
-
-        if self._search_term != s:
-            self._search_results_page = 1
-
-        mixes = self.search_request(s, 'tags')
-
-        self.display_search_results(mixes, s)
-
-    def help_search_tags(self):
-        print('Syntax: search <tags>')
-        print('Search for a mix by tags. You can then play a mix with the "play" command.')
-        print('Validate with empty line go to next page results.')
+        print('Syntax: search <tag1>,<tag2>,<tag3>')
+        print('Search for a mix by tag(s). You can then play a mix with the "play" command.')
+        print('Pressing <enter> shows next page results.')
 
     def do_search_user(self, s):
-
-        if self._search_term != s:
-            self._search_results_page = 1
         try:
             mixes = self.search_request(s, 'user')
             self.display_search_results(mixes, s)
@@ -261,12 +235,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def help_search_user(self):
         print('Syntax: search <username>')
         print('Search for a mix by user. You can then play a mix with the "play" command.')
-        print('Validate with empty line go to next page results.')
+        print('Pressing <enter> shows next page results.')
 
     def do_search_user_liked(self, s):
-
-        if self._search_term != s:
-            self._search_results_page = 1
         try:
             mixes = self.search_request(s, 'user_liked')
             self.display_search_results(mixes, s)
@@ -276,27 +247,62 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def help_search_user_liked(self):
         print('Syntax: search <username>')
         print('Search for a mix liked by user. You can then play a mix with the "play" command.')
-        print('Validate with empty line go to next page results.')
+        print('Pressing <enter> shows next page results.')
 
-    def do_search_options(self, s):
-        if not s or not s.split()[1].isdigit() or s.split()[0] not in ('recent', 'popular', 'hot'):
-            self.do_help_search_options()
+    def do_set(self, s, setting=None, param=''):
+        if not s:
+            self.help_set()
+        elif len(s.split()) < 2:
+            setting = s.split()[0]
         else:
-            configs = s.split()
-            self.config['results_sorting'] = self._results_sorting = configs[0]
-            self.config['results_per_page'] = self._results_per_page = configs[1]
+            setting = s.split()[0]
+            param = s.split()[1]
 
-    def help_search_options(self):
-        print('Syntax: search_options recent|popular|hot <n>')
-        print('Configure search to show <n> results per page and sort by recent|popular|hot.')
-        print('Sorting options only works for tag(s) search.')
+        if setting == "sorting":
+            if param in ('recent', 'popular', 'hot'):
+                self.config['results_sorting'] = self._results_sorting = param
+            else:
+                self.help_set_sorting()
+        elif setting == "results_per_page":
+            if param.isdigit():
+                self.config['results_per_page'] = self._results_per_page = param
+            else:
+                self.help_set_results_per_page()
+        elif setting == "autologin":
+            if param == 'yes':
+                self.config['autologin'] = 'True'
+                self.config['username'] = self._user_name
+                self.config['password'] = self._password
+            elif param == 'no':
+                self.config['autologin'] = ''
+                self.config['password'] = ''
+                self.config['username'] = ''
+            else:
+                self.help_set_autologin()
 
-    def do_help_search_options(self):
-        print('Syntax: search_options recent|popular|hot <results per page> ')
-        print('Configure search options. The <results_per_page> must be a number.')
-        print('Current options : sort {results_per_page} {results_sorting} mixes per page.'.format(
-            results_per_page=self.config['results_per_page'],
-                results_sorting=self.config['results_sorting']))
+    def help_set(self):
+        print('Syntax: set <setting> <param>')
+        print('Configure settings.')
+        print('Settings available: sorting, results_per_page, autologin.')
+        print('To get help for each setting, press enter with no <param>.')
+
+    def help_set_sorting(self):
+        print('Syntax: set sorting recent|popular|hot')
+        print('Configure search results sorting order ("hot" by default).')
+        print('Current value: {results_sorting}.'.format(
+            results_sorting=self.config['results_sorting']))
+
+    def help_set_results_per_page(self):
+        print('Syntax: set results_per_page <results per page> ')
+        print('Set the number of results showed per page (10 by default).')
+        print('Current value: {results_per_page}.'.format(
+            results_per_page=self.config['results_per_page']))
+
+    def help_set_autologin(self):
+        print('Syntax: set autologin yes|no')
+        print('Toggle autologin on start (no by default).')
+        print('WARNING: password will be saved in plain text.')
+        print('When toggled off, password and username are deleted from config.')
 
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
@@ -386,33 +392,12 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: login <username>')
         print('Log in to your 8tracks account.')
 
-    def do_autologin(self, s):
-        if not s or s not in ('on', 'off'):
-            self.help_autologin()
-        elif s == 'on':
-            self.config['autologin'] = 'True'
-            self.config['username'] = self._user_name
-            self.config['password'] = self._password
-        elif s == 'off':
-            self.config['autologin'] = ''
-            self.config['password'] = ''
-            self.config['username'] = ''
-
-    def help_autologin(self):
-        print('Syntax: autologin on|off')
-        print('Toggle autologin on start (off by default).')
-        print('WARNING: password will be saved in plain text.')
-        print('When toggled off, password and username are deleted from config.')
-
     def do_liked_mixes(self, s=''):
-        if self._search_term != '':
-            self._search_results_page = 1
-
         if not self._logged_in:
             print('You must first be logged in. Use login command.')
         else:
-            mixes = self.search_request(s, 'liked_by_user')
-            self.display_search_results(mixes, s)
+            mixes = self.search_request(self._user_name, 'user_liked')
+            self.display_search_results(mixes, self._user_name)
 
     def help_liked_mixes(self):
         print('List liked mixes (login required).')
@@ -422,10 +407,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         return self._logged_in
 
     def search_request(self, s, query_type):
+        if self._search_term != s or self.query_type != query_type:
+            self._search_results_page = 1
 
+        self.query_type = query_type
         self._search_term = s
 
-        results = self.api.search_mix(query_type, self._search_term,
+        results = self.api.search_mix(self.query_type, self._search_term,
             self.config['results_sorting'], self._search_results_page, self._results_per_page)
         mixes = results[0]
         self.total_pages = results[1]
@@ -435,10 +423,15 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def display_search_results(self, mixes, s):
 
+        if self._search_results_page < self.total_pages:
+            next_notification = "--Next-- (Enter)"
+        else:
+            next_notification = ""
+
         print('Results for "{}":'.format(s))
         wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
         mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
-        page_info_tpl = Template('Page $page on $total_pages')
+        page_info_tpl = Template('Page $page on $total_pages. $next_notification')
 
         self.mixes = {}
         for i, mix in enumerate(mixes, 1):
@@ -454,7 +447,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
         page_info = page_info_tpl.substitute(page=bold(str(self._search_results_page)),
-                 total_pages=bold(str(self.total_pages)))
+                 total_pages=bold(str(self.total_pages)), next_notification=next_notification)
         print(wrapper.fill(page_info))
 
 
