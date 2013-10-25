@@ -51,7 +51,8 @@ class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
 
-    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password', 'autologin']
+    DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
+             'autologin', 'results_per_page', 'results_sorting']
 
     def __init__(self, filename=None):
         if not filename:
@@ -136,6 +137,19 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self._logged_in = None
         self._user_name = ''
         self._password = ''
+        self._search_term = None
+        self._search_results_page = 1
+        self.total_pages = None
+        self.query_type = None
+
+        if not self.config['results_per_page']:
+            self.config['results_per_page'] = self._results_per_page = 10
+        elif not self.config['results_sorting']:
+            self.config['results_sorting'] = self._results_sorting = 'hot'
+        else:
+            self._results_per_page = self.config['results_per_page']
+            self._results_sorting = self.config['results_sorting']
+
         # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'], password=self.config['password'])
@@ -157,33 +171,138 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
-        pass
+        search_commands = ('search', 'search_tag', 'search_user',
+             'search_user_liked', 'liked_mixes')
+        if (self.lastcmd.startswith((search_commands)) and
+        self._search_results_page < self.total_pages):
+            self.show_next_page(self.lastcmd)
+        else:
+            pass
+
+    def show_next_page(self, s):
+        if s.startswith('search') and not self.lastcmd.startswith((
+            'search_options',
+            'search_tag',
+            'search_tags',
+            'search_user',
+            'search_user_liked'
+                    )):
+            self._search_results_page = self._next_page
+            self.do_search(self._search_term)
+        elif s.startswith('liked_mixes'):
+            self._search_results_page = self._next_page
+            self.do_liked_mixes(self)
+        elif s.startswith('search_tag'):
+            self._search_results_page = self._next_page
+            self.do_search_tag(self._search_term)
+        elif s.startswith('search_tags'):
+            self._search_results_page = self._next_page
+            self.do_search_tags(self._search_term)
+        elif s.startswith('search_user'):
+            self._search_results_page = self._next_page
+            self.do_search_user(self._search_term)
+        elif s.startswith('search_user_liked'):
+            self._search_results_page = self._next_page
+            self.do_search_user_liked(self._search_term)
 
     # Actual commands
 
     def do_search(self, s):
-        mixes = self.api.search_mix(s)
-
-        print('Results for "{}":'.format(s))
-        wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
-        mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
-
-        self.mixes = {}
-        for i, mix in enumerate(mixes, 1):
-            # Cache mix ids
-            self.mixes[i] = mix
-            # Print line
-            prefix = ' {0})'.format(i).ljust(5)
-            hours = mix['duration'] // 60 // 60
-            minutes = (mix['duration'] // 60) % 60
-            mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
-                    trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
-            print(prefix + wrapper.fill(mix_info))
-            print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
+        mixes = self.search_request(s, 'keyword')
+        self.display_search_results(mixes, s)
 
     def help_search(self):
         print('Syntax: search <searchterm>')
-        print('Search for a mix. You can then play a mix with the "play" command.')
+        print('Search for a mix by keyword. You can then play a mix with the "play" command.')
+        print('Pressing <enter> shows next page results.')
+
+    def do_search_tag(self, s):
+        mixes = self.search_request(s, 'tag')
+        self.display_search_results(mixes, s)
+
+    def help_search_tag(self):
+        print('Syntax: search <tag1>,<tag2>,<tag3>')
+        print('Search for a mix by tag(s). You can then play a mix with the "play" command.')
+        print('Pressing <enter> shows next page results.')
+
+    def do_search_user(self, s):
+        try:
+            mixes = self.search_request(s, 'user')
+            self.display_search_results(mixes, s)
+        except HTTPError:
+                print('User %s not found.' % s)
+
+    def help_search_user(self):
+        print('Syntax: search <username>')
+        print('Search for a mix by user. You can then play a mix with the "play" command.')
+        print('Pressing <enter> shows next page results.')
+
+    def do_search_user_liked(self, s):
+        try:
+            mixes = self.search_request(s, 'user_liked')
+            self.display_search_results(mixes, s)
+        except HTTPError:
+                print('User %s not found.' % s)
+
+    def help_search_user_liked(self):
+        print('Syntax: search <username>')
+        print('Search for a mix liked by user. You can then play a mix with the "play" command.')
+        print('Pressing <enter> shows next page results.')
+
+    def do_set(self, s, setting=None, param=''):
+        if not s:
+            self.help_set()
+        elif len(s.split()) < 2:
+            setting = s.split()[0]
+        else:
+            setting = s.split()[0]
+            param = s.split()[1]
+
+        if setting == "sorting":
+            if param in ('recent', 'popular', 'hot'):
+                self.config['results_sorting'] = self._results_sorting = param
+            else:
+                self.help_set_sorting()
+        elif setting == "results_per_page":
+            if param.isdigit():
+                self.config['results_per_page'] = self._results_per_page = param
+            else:
+                self.help_set_results_per_page()
+        elif setting == "autologin":
+            if param == 'yes':
+                self.config['autologin'] = 'True'
+                self.config['username'] = self._user_name
+                self.config['password'] = self._password
+            elif param == 'no':
+                self.config['autologin'] = ''
+                self.config['password'] = ''
+                self.config['username'] = ''
+            else:
+                self.help_set_autologin()
+
+    def help_set(self):
+        print('Syntax: set <setting> <param>')
+        print('Configure settings.')
+        print('Settings available: sorting, results_per_page, autologin.')
+        print('To get help for each setting, press enter with no <param>.')
+
+    def help_set_sorting(self):
+        print('Syntax: set sorting recent|popular|hot')
+        print('Configure search results sorting order ("hot" by default).')
+        print('Current value: {results_sorting}.'.format(
+            results_sorting=self.config['results_sorting']))
+
+    def help_set_results_per_page(self):
+        print('Syntax: set results_per_page <results per page> ')
+        print('Set the number of results showed per page (10 by default).')
+        print('Current value: {results_per_page}.'.format(
+            results_per_page=self.config['results_per_page']))
+
+    def help_set_autologin(self):
+        print('Syntax: set autologin yes|no')
+        print('Toggle autologin on start (no by default).')
+        print('WARNING: password will be saved in plain text.')
+        print('When toggled off, password and username are deleted from config.')
 
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
@@ -273,55 +392,63 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Syntax: login <username>')
         print('Log in to your 8tracks account.')
 
-    def do_autologin(self, s):
-        if not s or s not in ('on', 'off'):
-            self.help_autologin()
-        elif s == 'on':
-            self.config['autologin'] = 'True'
-            self.config['username'] = self._user_name
-            self.config['password'] = self._password
-        elif s == 'off':
-            self.config['autologin'] = ''
-            self.config['password'] = ''
-            self.config['username'] = ''
+    def do_liked_mixes(self, s=''):
+        if not self._logged_in:
+            print('You must first be logged in. Use login command.')
+        else:
+            mixes = self.search_request(self._user_name, 'user_liked')
+            self.display_search_results(mixes, self._user_name)
 
-    def help_autologin(self):
-        print('Syntax: autologin on|off')
-        print('Toggle autologin on start (off by default).')
-        print('WARNING: password will be saved in plain text.')
-        print('When toggled off, password and username are deleted from config.')
+    def help_liked_mixes(self):
+        print('List liked mixes (login required).')
+        print('Validate with empty line go to next page results.')
 
     def get_login_status(self):
         return self._logged_in
 
-    def do_liked_mixes(self, s):
-        if not self._logged_in:
-            print('You must first be logged in. Use login command.')
+    def search_request(self, s, query_type):
+        if self._search_term != s or self.query_type != query_type:
+            self._search_results_page = 1
+
+        self.query_type = query_type
+        self._search_term = s
+
+        results = self.api.search_mix(self.query_type, self._search_term,
+            self.config['results_sorting'], self._search_results_page, self._results_per_page)
+        mixes = results[0]
+        self.total_pages = results[1]
+        self._next_page = results[2]
+
+        return mixes
+
+    def display_search_results(self, mixes, s):
+
+        if self._search_results_page < self.total_pages:
+            next_notification = "--Next-- (Enter)"
         else:
-            mixes = self.api.get_liked_mixes()
+            next_notification = ""
 
-            print('Results for "{}":'.format(s))
-            wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
-            mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ' +
-                                    '${minutes}m, by ${user})')
+        print('Results for "{}":'.format(s))
+        wrapper = TextWrapper(width=self.console_width - 5, subsequent_indent=(' ' * 5))
+        mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
+        page_info_tpl = Template('Page $page on $total_pages. $next_notification')
 
-            self.mixes = {}
-            for i, mix in enumerate(mixes, 1):
-                # Cache mix ids
-                self.mixes[i] = mix
-                # Print line
-                prefix = ' {0})'.format(i).ljust(5)
-                hours = mix['duration'] // 60 // 60
-                minutes = (mix['duration'] // 60) % 60
-                mix_info = mix_info_tpl.substitute(
-                        name=bold(mix['name']), user=mix['user']['login'],
-                        trackcount=mix['tracks_count'],
-                        hours=hours, minutes=minutes)
-                print(prefix + wrapper.fill(mix_info))
-                print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
+        self.mixes = {}
+        for i, mix in enumerate(mixes, 1):
+            # Cache mix ids
+            self.mixes[i] = mix
+            # Print line
+            prefix = ' {0})'.format(i).ljust(5)
+            hours = mix['duration'] // 60 // 60
+            minutes = (mix['duration'] // 60) % 60
+            mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
+                    trackcount=mix['tracks_count'], hours=hours, minutes=minutes)
+            print(prefix + wrapper.fill(mix_info))
+            print(wrapper.fill('     Tags: {}'.format(mix['tag_list_cache'])))
 
-    def help_liked_mixes(self):
-        print('List liked mixes (login required).')
+        page_info = page_info_tpl.substitute(page=bold(str(self._search_results_page)),
+                 total_pages=bold(str(self.total_pages)), next_notification=next_notification)
+        print(wrapper.fill(page_info))
 
 
 class PlayCommand(cmd.Cmd, object):

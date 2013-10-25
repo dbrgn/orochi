@@ -41,7 +41,36 @@ Available commands (main menu)::
 
     search:
         Syntax: search <searchterm>
-        Search for a mix. You can then play a mix with the "play" command.
+        Search for a mix by keyword.
+        You can then play a mix with the "play" command.
+        Press enter to show next page results.
+    search_tag:
+        Syntax: search <tag1>,<tag2>
+        Search for a mix by tag(s).
+        You can then play a mix with the "play" command.
+        Press Enter to show next page results.
+    search_user:
+        Syntax: search <username>
+        Search for a mix by user.
+        You can then play a mix with the "play" command.
+        Press Enter to show next page results.
+    search_user_liked:
+        Syntax: search <username>
+        Search for a mix liked by user.
+        You can then play a mix with the "play" command.
+        Press Enter to show next page results.
+    set:
+        Syntax: set <setting> <param>
+        Configure settings.
+        Available settings: 
+        - autologin yes|no
+          Toggle autologin on start (no by default)
+          WARNING: password will be saved in plain text.
+        - sorting recent|popular|hot (hot by default)
+          Configure search results sorting order.
+        - results_per_page <n>
+          Set number of results per page showed.
+        To get help for each setting, press Enter with no <param>.
     play:
         Syntax: play <mix>
         Play the nth mix from the last search results.
@@ -52,13 +81,10 @@ Available commands (main menu)::
     login:
         Syntax: login <username>
         Log in to your 8tracks account.
-    autologin:
-        Syntax: autologin on|off
-        Toggle autologin on start (off by default).
-        WARNING: password will be saved in plain text.
-        When toggled off, password and username are deleted from config.
     liked_mixes:
         List liked mixes (login required).
+        Press Enter to show next page results.
+
 
 Available commands (play mode menu)::
 

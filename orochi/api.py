@@ -97,10 +97,10 @@ class EightTracksAPI(object):
         return self.play_token
 
     def _obtain_user_token(self, username, password, force_refresh=False):
-        """Return a new user token.
+        """Request a new user token and pass it to the session header.
 
         If a user token has already been requested before, this token is
-        returned, as long as ``force_refresh`` is ``False``.
+        passed, as long as ``force_refresh`` is ``False``.
 
         Args:
             force_refresh:
@@ -111,44 +111,62 @@ class EightTracksAPI(object):
             password:
                 Password needed to log in.
 
-        Returns:
-            A user token as a string.
-
         """
         if self._user_token is None or force_refresh:
             # Logging out before trying to login. Otherwise logging in with a
             # new username won't work.
             self._post('logout')
             data = self._post('sessions.json', auth=(username, password))
-            self._user_name = username
             self._user_token = data['user_token']
-        return self._user_token
+            self.s.headers.update({'X-User-Token': self._user_token})
 
-    def search_mix(self, query, sort='hot', page=1, per_page=10):
-        """Search for a mix.
+    def search_mix(self, query_type, query, sort, page, per_page):
+        """Search for a mix by term, tag, user or user_liked.
 
         Args:
+            query_type:
+                The type of query. Possible values : tag, user,
+                user_liked.
             query:
                 The search term to search for.
             sort:
                 The sort order. Possible values: recent, popular, hot.
-                Default: 'hot'.
+                Only works for tag search.
             page:
                 Which result page to return, if more than ``per_page`` are
                 found.
             per_page:
-                How many mixes to return per page. Default: 10.
+                How many mixes to return per page.
 
         Returns:
             The list of matching mixes.
+            The total number of results pages.
+            The next results page number.
 
         """
-        data = self._get('mixes.json', {
-            'q': query,
-            'sort': sort,
-            'per_page': per_page,
-        })
-        return data['mixes']
+        params = {
+                'sort': sort,
+                'page': page,
+                'per_page': per_page,
+                }
+        resource = 'mixes.json'
+
+        if query_type == 'tag':
+            if len(query.split(',')) < 1:
+                params['tag'] = query
+            else:
+                params['tags'] = query.replace(",", "+")
+        elif query_type == 'user':
+            resource = 'users/{username}/mixes.json'.format(username=query)
+        elif query_type == 'user_liked':
+            params['view'] = 'liked'
+            resource = 'users/{username}/mixes.json'.format(username=query)
+        elif query_type == 'keyword':
+            params['q'] = query
+
+        data = self._get(resource, params)
+
+        return data['mixes'], data['total_pages'], data['next_page']
 
     def get_mix_with_id(self, mix_id):
         """Find and return the mix with the specified ID.
@@ -186,16 +204,6 @@ class EightTracksAPI(object):
         if 'errors' in data and data['errors'] is not None:
             raise APIError(data['errors'], data)
         return data['mix']
-
-    def get_liked_mixes(self):
-        """Return the liked mixes for current user.
-
-        Returns:
-            The list of liked mixes.
-
-        """
-        data = self._get('/users/{token}/mixes.json?view=liked'.format(token=self._user_name))
-        return data['mixes']
 
     def _playback_control(self, mix_id, command):
         """Used to do play/next/skip requests.
