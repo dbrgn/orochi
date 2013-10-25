@@ -180,30 +180,23 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             pass
 
     def show_next_page(self, s):
-        if s.startswith('search') and not self.lastcmd.startswith((
-            'search_options',
-            'search_tag',
-            'search_tags',
-            'search_user',
-            'search_user_liked'
-                    )):
-            self._search_results_page = self._next_page
-            self.do_search(self._search_term)
-        elif s.startswith('liked_mixes'):
-            self._search_results_page = self._next_page
-            self.do_liked_mixes(self)
-        elif s.startswith('search_tag'):
-            self._search_results_page = self._next_page
-            self.do_search_tag(self._search_term)
-        elif s.startswith('search_tags'):
-            self._search_results_page = self._next_page
-            self.do_search_tags(self._search_term)
-        elif s.startswith('search_user'):
-            self._search_results_page = self._next_page
-            self.do_search_user(self._search_term)
-        elif s.startswith('search_user_liked'):
-            self._search_results_page = self._next_page
-            self.do_search_user_liked(self._search_term)
+        if s.startswith('search '):
+            func, arg = self.do_search, self._search_term
+        elif s.startswith('liked_mixes '):
+            func, arg = self.do_liked_mixes, self
+        elif s.startswith('search_tag '):
+            func, arg = self.do_search_tag, self._search_term
+        elif s.startswith('search_tags '):
+            func, arg = self.do_search_tags, self._search_term
+        elif s.startswith('search_user '):
+            func, arg = self.do_search_user, self._search_term
+        elif s.startswith('search_user_liked '):
+            func, arg = self.do_search_user_liked, self._search_term
+        else:
+            print('*** Invalid argument for function `show_next_page`.')
+            return
+        self._search_results_page = self._next_page
+        func(arg)
 
     # Actual commands
 
