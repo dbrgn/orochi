@@ -171,7 +171,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
-        search_commands = ('search', 'search_tag', 'search_user',
+        search_commands = ('search', 'search_tags', 'search_user',
              'search_user_liked', 'liked_mixes')
         if (self.lastcmd.startswith((search_commands)) and
         self._search_results_page < self.total_pages):
@@ -184,8 +184,6 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             func, arg = self.do_search, self._search_term
         elif s.startswith('liked_mixes '):
             func, arg = self.do_liked_mixes, self
-        elif s.startswith('search_tag '):
-            func, arg = self.do_search_tag, self._search_term
         elif s.startswith('search_tags '):
             func, arg = self.do_search_tags, self._search_term
         elif s.startswith('search_user '):
@@ -209,13 +207,17 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Search for a mix by keyword. You can then play a mix with the "play" command.')
         print('Pressing <enter> shows next page results.')
 
-    def do_search_tag(self, s):
-        mixes = self.search_request(s, 'tag')
-        self.display_search_results(mixes, s)
+    def do_search_tags(self, s):
+        if not s:
+            self.help_search_tags()
+        else:
+            mixes = self.search_request(s, 'tag')
+            self.display_search_results(mixes, s)
 
-    def help_search_tag(self):
-        print('Syntax: search <tag1>,<tag2>,<tag3>')
-        print('Search for a mix by tag(s). You can then play a mix with the "play" command.')
+    def help_search_tags(self):
+        print('Syntax: search <tag1>[, <tag2>, <tag3>]')
+        print('Search for a mix by tag(s), separated by comma.')
+        print('You can then play a mix with the "play" command.')
         print('Pressing <enter> shows next page results.')
 
     def do_search_user(self, s):

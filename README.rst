@@ -44,9 +44,9 @@ Available commands (main menu)::
         Search for a mix by keyword.
         You can then play a mix with the "play" command.
         Press enter to show next page results.
-    search_tag:
-        Syntax: search <tag1>,<tag2>
-        Search for a mix by tag(s).
+    search_tags:
+        Syntax: search <tag1>, <tag2>
+        Search for a mix by tag(s), separated by comma.
         You can then play a mix with the "play" command.
         Press Enter to show next page results.
     search_user:
