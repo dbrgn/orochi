@@ -125,8 +125,7 @@ class EightTracksAPI(object):
 
         Args:
             query_type:
-                The type of query. Possible values : tag, user,
-                user_liked.
+                The type of query. Possible values: tag, user, user_liked.
             query:
                 The search term to search for.
             sort:
@@ -139,9 +138,11 @@ class EightTracksAPI(object):
                 How many mixes to return per page.
 
         Returns:
-            The list of matching mixes.
-            The total number of results pages.
-            The next results page number.
+            Tuple containing three items:
+
+            - The list of matching mixes.
+            - The total number of results pages.
+            - The next results page number.
 
         """
         params = {
@@ -152,10 +153,12 @@ class EightTracksAPI(object):
         resource = 'mixes.json'
 
         if query_type == 'tag':
-            if len(query.split(',')) < 1:
+            parts = query.split(',')
+            tags = filter(None, map(lambda p: p.strip(), parts))
+            if len(tags) < 1:
                 params['tag'] = query
             else:
-                params['tags'] = query.replace(",", "+")
+                params['tags'] = '+'.join(tags)
         elif query_type == 'user':
             resource = 'users/{username}/mixes.json'.format(username=query)
         elif query_type == 'user_liked':
