@@ -256,23 +256,22 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def do_set(self, s, setting=None, param=''):
         if not s:
             self.help_set()
-        elif len(s.split()) < 2:
-            setting = s.split()[0]
         else:
-            setting = s.split()[0]
-            param = s.split()[1]
+            parts = s.split()
+            setting = parts[0]
+            param = parts[1] if len(parts) > 1 else None
 
-        if setting == "sorting":
+        if setting == 'sorting':
             if param in ('recent', 'popular', 'hot'):
                 self.config['results_sorting'] = self._results_sorting = param
             else:
                 self.help_set_sorting()
-        elif setting == "results_per_page":
+        elif setting == 'results_per_page':
             if param.isdigit():
                 self.config['results_per_page'] = self._results_per_page = param
             else:
                 self.help_set_results_per_page()
-        elif setting == "autologin":
+        elif setting == 'autologin':
             if param == 'yes':
                 self.config['autologin'] = 'True'
                 self.config['username'] = self._user_name
