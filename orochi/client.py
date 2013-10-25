@@ -199,8 +199,11 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     # Actual commands
 
     def do_search(self, s):
-        mixes = self.search_request(s, 'keyword')
-        self.display_search_results(mixes, s)
+        if not s:
+            self.help_search()
+        else:
+            mixes = self.search_request(s, 'keyword')
+            self.display_search_results(mixes, s)
 
     def help_search(self):
         print('Syntax: search <searchterm>')
@@ -221,11 +224,14 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Pressing <enter> shows next page results.')
 
     def do_search_user(self, s):
-        try:
-            mixes = self.search_request(s, 'user')
-            self.display_search_results(mixes, s)
-        except HTTPError:
-                print('User %s not found.' % s)
+        if not s:
+            self.help_search_user()
+        else:
+            try:
+                mixes = self.search_request(s, 'user')
+                self.display_search_results(mixes, s)
+            except HTTPError:
+                    print('User %s not found.' % s)
 
     def help_search_user(self):
         print('Syntax: search <username>')
@@ -233,11 +239,14 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('Pressing <enter> shows next page results.')
 
     def do_search_user_liked(self, s):
-        try:
-            mixes = self.search_request(s, 'user_liked')
-            self.display_search_results(mixes, s)
-        except HTTPError:
-                print('User %s not found.' % s)
+        if not s:
+            self.help_search_user_liked()
+        else:
+            try:
+                mixes = self.search_request(s, 'user_liked')
+                self.display_search_results(mixes, s)
+            except HTTPError:
+                    print('User %s not found.' % s)
 
     def help_search_user_liked(self):
         print('Syntax: search <username>')
