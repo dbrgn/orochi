@@ -127,7 +127,9 @@ class EightTracksAPI(object):
             query_type:
                 The type of query. Possible values: tag, user, user_liked.
             query:
-                The search term to search for.
+                The search term to search for (string or unicode). If the
+                query_type is `tag`, then this parameter should be a comma
+                separated string of tags to search for.
             sort:
                 The sort order. Possible values: recent, popular, hot.
                 Only works for tag search.

@@ -399,8 +399,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         if not self._logged_in:
             print('You must first be logged in. Use login command.')
         else:
-            mixes = self.search_request(self._user_name, 'user_liked')
-            self.display_search_results(mixes, self._user_name)
+            self.do_search_user_liked(self._user_name)
 
     def help_liked_mixes(self):
         print('List liked mixes (login required).')
