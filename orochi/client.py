@@ -182,7 +182,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def show_next_page(self, s):
         if s.startswith('search '):
             func, arg = self.do_search, self._search_term
-        elif s.startswith('liked_mixes '):
+        elif s.startswith('liked_mixes'):
             func, arg = self.do_liked_mixes, self
         elif s.startswith('search_tags '):
             func, arg = self.do_search_tags, self._search_term
