@@ -182,7 +182,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def show_next_page(self, s):
         if s.startswith('search '):
             func, arg = self.do_search, self._search_term
-        elif s.startswith('liked_mixes '):
+        elif s.startswith('liked_mixes'):
             func, arg = self.do_liked_mixes, self
         elif s.startswith('search_tags '):
             func, arg = self.do_search_tags, self._search_term
@@ -329,7 +329,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print('*** Invalid data was returned for URL')
         else:
             try:
-                typed_val = int(s)
+                typed_val = int(s) - ((int(self._search_results_page) - 1) * int(self.config['results_per_page']))
                 if typed_val in self.mixes:
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
@@ -439,8 +439,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         for i, mix in enumerate(mixes, 1):
             # Cache mix ids
             self.mixes[i] = mix
+            # Get mix number in relation to page number
+            mix_num = i + ((int(self._search_results_page) - 1) * int(self.config['results_per_page']))
             # Print line
-            prefix = ' {0})'.format(i).ljust(5)
+            prefix = ' {0})'.format(mix_num).ljust(5)
             hours = mix['duration'] // 60 // 60
             minutes = (mix['duration'] // 60) % 60
             mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
