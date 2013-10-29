@@ -329,7 +329,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print('*** Invalid data was returned for URL')
         else:
             try:
-                typed_val = int(s) - ((int(self._search_results_page) - 1) * int(self.config['results_per_page']))
+                results_per_page = self.config['results_per_page']
+                previous_entries = (int(self._search_results_page) - 1) * results_per_page
+                typed_val = int(s) - previous_entries
                 if typed_val in self.mixes:
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
@@ -440,7 +442,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             # Cache mix ids
             self.mixes[i] = mix
             # Get mix number in relation to page number
-            mix_num = i + ((int(self._search_results_page) - 1) * int(self.config['results_per_page']))
+            mix_num = i + (self._search_results_page - 1) * self.config['results_per_page']
             # Print line
             prefix = ' {0})'.format(mix_num).ljust(5)
             hours = mix['duration'] // 60 // 60
