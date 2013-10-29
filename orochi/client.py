@@ -329,9 +329,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 print('*** Invalid data was returned for URL')
         else:
             try:
-                results_per_page = self.config['results_per_page']
-                previous_entries = (int(self._search_results_page) - 1) * results_per_page
-                typed_val = int(s) - previous_entries
+                typed_val = int(s)
                 if typed_val in self.mixes:
                     mix = self.mixes[typed_val]
                     mix_id = mix['id']
@@ -437,14 +435,17 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         mix_info_tpl = Template('$name ($trackcount tracks, ${hours}h ${minutes}m, by ${user})')
         page_info_tpl = Template('Page $page on $total_pages. $next_notification')
 
-        self.mixes = {}
-        for i, mix in enumerate(mixes, 1):
-            # Cache mix ids
+        # If this is a new query, reset mixes dictionary
+        if self._search_results_page == 0:
+            self.mixes = {}
+
+        # Store and show new mix results
+        start_page_no = (self._search_results_page - 1) * self.config['results_per_page'] + 1
+        for i, mix in enumerate(mixes, start_page_no):
+            # Cache mix
             self.mixes[i] = mix
-            # Get mix number in relation to page number
-            mix_num = i + (self._search_results_page - 1) * self.config['results_per_page']
             # Print line
-            prefix = ' {0})'.format(mix_num).ljust(5)
+            prefix = ' {0})'.format(i).ljust(5)
             hours = mix['duration'] // 60 // 60
             minutes = (mix['duration'] // 60) % 60
             mix_info = mix_info_tpl.substitute(name=bold(mix['name']), user=mix['user']['login'],
