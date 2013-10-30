@@ -268,7 +268,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self.help_set_sorting()
         elif setting == 'results_per_page':
             if param.isdigit():
-                self.config['results_per_page'] = self._results_per_page = param
+                self.config['results_per_page'] = self._results_per_page = int(param)
             else:
                 self.help_set_results_per_page()
         elif setting == 'autologin':
