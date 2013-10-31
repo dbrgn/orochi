@@ -156,6 +156,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         return super(Client, self).preloop()
 
     def precmd(self, line):
+        self.lastline_is_empty = False
         self.console_width = int(os.popen('stty size', 'r').read().split()[1])
         return super(Client, self).precmd(line)
 
@@ -171,6 +172,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def emptyline(self):
         """Don't repeat last command on empty line."""
+        self.lastline_is_empty = True
+
         search_commands = ('search', 'search_tags', 'search_user',
              'search_user_liked', 'liked_mixes')
         if (self.lastcmd.startswith((search_commands)) and
@@ -409,7 +412,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         return self._logged_in
 
     def search_request(self, s, query_type):
-        if self._search_term != s or self.query_type != query_type:
+        if self._search_term != s or self.query_type != query_type or not self.lastline_is_empty:
             self._search_results_page = 1
 
         self.query_type = query_type
