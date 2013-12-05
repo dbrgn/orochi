@@ -576,7 +576,7 @@ class PlayCommand(cmd.Cmd, object):
         print('Skipping to the next mix...')
         mix = self.api.next_mix(self.mix_id)
         self.mix_id = mix['id']
-        self.prompt = get_prompt(mix)
+        self.prompt = get_prompt(mix).encode('utf8')
 
         self.status = self.api.play_mix(self.mix_id)
         self.p.load(self.status['track']['url'])
