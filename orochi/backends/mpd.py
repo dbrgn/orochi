@@ -97,7 +97,7 @@ class MPDPlayer(Player):
             amount = int(amount)
             assert 0 <= amount <= 100
         except (ValueError, AssertionError):
-            raise ValueError('``amount`` must be a number between 0 and 100.')
+            raise ValueError('``amount`` must be an integer between 0 and 100.')
         self.client.setvol(amount)
 
     def terminate(self):

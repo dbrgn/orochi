@@ -15,7 +15,7 @@ from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
 from .backends.mpd import MPDPlayer as Player
-from .errors import InitializationError, TerminatedError
+from .errors import InitializationError, TerminatedError, CommandError
 from .colors import bold
 
 
@@ -588,13 +588,15 @@ class PlayCommand(cmd.Cmd, object):
         try:
             self.p.volume(s)
         except ValueError:
-            print('*** ValueError: Argument must be a number between 0 and 100.')
+            print('*** ValueError: Argument must be an integer between 0 and 100.')
+        except CommandError as e:
+            print('*** CommandError: {0!s}'.format(e))
         else:
             self.parent_cmd.volume = int(s)
 
     def help_volume(self):
         print('Syntax: volume <amount>')
-        print('Change playback volume. The argument must be a number between 0 and 100.')
+        print('Change playback volume. The argument must be an integer between 0 and 100.')
 
     def do_status(self, s=''):
         track = self.status['track']
