@@ -14,7 +14,7 @@ from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
 from .api import EightTracksAPI, APIError
-from .player import MPlayer
+from .backends.mpd import MPDPlayer as Player
 from .errors import InitializationError, TerminatedError
 from .colors import bold
 
@@ -473,8 +473,8 @@ class PlayCommand(cmd.Cmd, object):
 
         super(PlayCommand, self).__init__(*args, **kwargs)
 
-        # Initialize mplayer
-        self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
+        # Initialize player
+        self.p = Player(extra_arguments=config['mplayer_extra_arguments'])
 
         # Register signal handlers
         signal.signal(signal.SIGUSR1, self._song_end_handler)
@@ -541,7 +541,7 @@ class PlayCommand(cmd.Cmd, object):
         signal.signal(signal.SIGUSR1, signal.SIG_DFL)
         signal.signal(signal.SIGUSR2, signal.SIG_DFL)
 
-        # Stop playback, terminate mplayer
+        # Stop playback, terminate player
         try:
             self.p.stop()
             self.p.terminate()

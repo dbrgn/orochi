@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+"""
+WARNING WARNING WARNING
+
+This module is not working at the moment, as mplayer is being replaced with
+MPD. It does not implement the generic interface and does not work at all at
+the moment. It might again in the future, but probably won't.
+
+"""
+raise ImportError(__doc__)
+
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
