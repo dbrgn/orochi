@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+The main client, implemented using the stdlib's cmd module.
+
+The client listens to the following signals:
+
+- SIGUSR1: Song has ended.
+- SIGUSR2: 30 seconds of a song have been played.
+
+"""
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
@@ -13,10 +22,16 @@ from getpass import getpass
 from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
+from . import utils, logging
 from .api import EightTracksAPI, APIError
 from .backends.mpd import MPDPlayer as Player
 from .errors import InitializationError, TerminatedError, CommandError
 from .colors import bold
+
+
+# Set up logging
+logging.setup(utils.get_xdg_config_home())
+logger = logging.get_logger()
 
 
 # Tuple containing prefix, main text and suffix for command line prompt
@@ -57,12 +72,7 @@ class ConfigFile(object):
 
     def __init__(self, filename=None):
         if not filename:
-            xdg_config_home = os.environ.get('XDG_CONFIG_HOME')
-            if not xdg_config_home:
-                xdg_config_home = os.path.join(os.path.expanduser('~'), '.config')
-            configdir = os.path.join(xdg_config_home, 'orochi')
-            if not os.path.isdir(configdir):
-                os.makedirs(configdir)
+            configdir = utils.get_xdg_config_home()
             filename = os.path.join(configdir, 'config.json')
         self.filename = filename
 
@@ -730,6 +740,7 @@ class PlayCommand(cmd.Cmd, object):
 
 
 def main():
+    logger.info('Starting client.')
     client = Client()
     client.cmdloop()
 
