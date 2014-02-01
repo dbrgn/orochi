@@ -22,7 +22,7 @@ from getpass import getpass
 from textwrap import TextWrapper
 from requests import HTTPError, ConnectionError
 
-from . import utils, logging
+from . import signals, utils, logging
 from .api import EightTracksAPI, APIError
 from .backends.mpd import MPDPlayer as Player
 from .errors import InitializationError, TerminatedError, CommandError
@@ -487,8 +487,8 @@ class PlayCommand(cmd.Cmd, object):
         self.p = Player(extra_arguments=config['mplayer_extra_arguments'])
 
         # Register signal handlers
-        signal.signal(signal.SIGUSR1, self._song_end_handler)
-        signal.signal(signal.SIGUSR2, self._song_report_handler)
+        signal.signal(signals.SONG_ENDED, self._song_end_handler)
+        signal.signal(signals.REGISTER_SONG, self._song_report_handler)
 
         # Play first track
         self.status = self.api.play_mix(mix_id)
@@ -548,8 +548,8 @@ class PlayCommand(cmd.Cmd, object):
         print('Stopping playback...')
 
         # Reset signal handling
-        signal.signal(signal.SIGUSR1, signal.SIG_DFL)
-        signal.signal(signal.SIGUSR2, signal.SIG_DFL)
+        signal.signal(signals.SONG_ENDED, signal.SIG_DFL)
+        signal.signal(signals.REGISTER_SONG, signal.SIG_DFL)
 
         # Stop playback, terminate player
         try:
