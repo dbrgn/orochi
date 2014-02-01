@@ -740,6 +740,7 @@ class PlayCommand(cmd.Cmd, object):
 
 
 def main():
+    logger.info('----------------')
     logger.info('Starting client.')
     client = Client()
     client.cmdloop()

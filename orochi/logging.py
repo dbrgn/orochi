@@ -15,5 +15,6 @@ def setup(directory):
     logger.addHandler(hdlr)
     logger.setLevel(logging.DEBUG)
 
+
 def get_logger():
     return logging.getLogger('orochi')
