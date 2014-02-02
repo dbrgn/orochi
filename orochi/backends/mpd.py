@@ -9,6 +9,7 @@ import os
 import threading
 import functools
 import logging
+import contextlib
 
 import mpd
 
@@ -37,31 +38,21 @@ def catch_mpd_error(msg):
                 raise errors.CommandError('{0} Details: {1!s}'.format(msg, e))
             except mpd.ConnectionError as e:
                 logger.warning('[mpd client] Connection error. Reconnecting...')
-                self.client.connect(self.host, self.port, self.timeout)
-                raise errors.CommandError('{0}. Connection error, restarted connection. ' +
-                        'Details: {1!s}'.format(msg, e))
+                raise errors.CommandError('{0} Connection error. Details: {1!s}'.format(msg, e))
         return wrapper
     return real_decorator
 
 
-def get_mpd_client(host, port, timeout, connect=True):
+def mpd_client_factory(timeout):
     """Helper function to return a connected MPD client instance.
 
-    :param host: The hostname or IP of the MPD server.
-    :type host: string
-    :param port: The port of the MPD server.
-    :type port: int
     :param timeout: The number of seconds to wait for a command to finish. Default: 15.
     :type timeout: int
-    :param connect: Whether or not to connect to the server before returning.
-    :type connect: bool
 
     """
     client = mpd.MPDClient()
     client.timeout = timeout
     client.idletimeout = None
-    if connect:
-        client.connect(host, port)
     return client
 
 
@@ -71,7 +62,7 @@ class StatusThread(threading.Thread):
     def __init__(self, host, port, timeout):
         super(StatusThread, self).__init__()
         self._stop = False
-        self.client = get_mpd_client(host, port, timeout, connect=False)
+        self.client = mpd_client_factory(timeout)
         self.host = host
         self.port = port
 
@@ -115,12 +106,23 @@ class MPDPlayer(Player):
         self.host = '127.0.0.1'
         self.port = 6600
         self.timeout = timeout
-        self.client = get_mpd_client(self.host, self.port, self.timeout)
+        self.client = mpd_client_factory(timeout)
         # Clear current playlist
-        self.client.clear()
+        with self.connection():
+            self.client.clear()
         # Start status thread
-        self.status_thread = StatusThread(self.host, self.port, self.timeout)
+        self.status_thread = StatusThread(self.host, self.port, timeout)
         self.status_thread.start()
+
+    @contextlib.contextmanager
+    def connection(self):
+        """Context manager to connect to and disconnect from MPD."""
+        try:
+            self.client.connect(self.host, self.port)
+            yield
+        finally:
+            self.client.close()
+            self.client.disconnect()
 
     @catch_mpd_error('Could not load & play song.')
     def load(self, path):
@@ -131,26 +133,29 @@ class MPDPlayer(Player):
 
         """
         logger.debug('[mpd player] Loading song {0}.'.format(path))
-        # To prevent going back to the previous song (8tracks disallows it),
-        # the playlist is cleared each time before loading the new track.
-        try:
-            self.client.clear()
-        except mpd.CommandError as e:
-            raise errors.CommandError('Could not clear playlist: {!s}'.format(e))
-        self.client.add(path)
-        self.client.play()
+        with self.connection():
+            # To prevent going back to the previous song (8tracks disallows it),
+            # the playlist is cleared each time before loading the new track.
+            try:
+                self.client.clear()
+            except mpd.CommandError as e:
+                raise errors.CommandError('Could not clear playlist: {!s}'.format(e))
+            self.client.add(path)
+            self.client.play()
 
     @catch_mpd_error('Could not play or pause song.')
     def playpause(self):
         """Pause or resume the playback of a song."""
         logger.debug('[mpd player] Play/Pause.')
-        self.client.pause()
+        with self.connection():
+            self.client.pause()
 
     @catch_mpd_error('Could not stop playback.')
     def stop(self):
         """Stop playback."""
         logger.debug('[mpd player] Stop.')
-        self.client.stop()
+        with self.connection():
+            self.client.stop()
 
     @catch_mpd_error('Could not set volume.')
     def volume(self, amount):
@@ -167,10 +172,10 @@ class MPDPlayer(Player):
             assert 0 <= amount <= 100
         except (ValueError, AssertionError):
             raise ValueError('``amount`` must be an integer between 0 and 100.')
-        self.client.setvol(amount)
+        with self.connection():
+            self.client.setvol(amount)
 
     def terminate(self):
         """Terminate the instance."""
         logger.debug('[mpd player] Terminating.')
         self.status_thread.stop()
-        self.client.close()
