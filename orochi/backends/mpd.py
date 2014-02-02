@@ -6,6 +6,7 @@ to the MPD server.
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
+import select
 import threading
 import functools
 import logging
@@ -69,18 +70,38 @@ class StatusThread(threading.Thread):
     def run(self):
         """Start the thread."""
         logger.debug('[status thread] Starting.')
+
+        # Connect
         self.client.connect(self.host, self.port)
+
+        # Store old state
         oldstate = self.client.status().get('state')
+
+        # Send an asynchronous IDLE command
+        self.client.send_idle('player')
+
+        # Set the timeout for the select() command in seconds. This allows the
+        # ``self._stop`` flag to be checked regularly. Not doing so would
+        # result in an indefinitely blocked client if something goes wrong.
+        select_timeout = 1.0
+
         while not self._stop:
-            systems = self.client.idle()  # Blocking call
-            if not 'player' in systems:
+            # Do a select() call to see if socket is ready
+            changes = select.select([self.client], [], [], select_timeout)
+            # If nothing has changed, loop again.
+            if self.client not in changes[0]:
                 continue
+            # Otherwise, reset the IDLE command and query / process status.
+            logger.debug('[status thread] Player status has changed.')
+            self.client.noidle()
             status = self.client.status()
             newstate = status.get('state')
             if oldstate == 'play' and newstate == 'stop' and status.get('songid') is None:
                 logger.debug('[status thread] Song has ended.')
                 os.kill(os.getpid(), signals.SONG_ENDED)
             oldstate = newstate
+            # Back to IDLE state.
+            self.client.send_idle('player')
         logger.debug('[status thread] Exiting.')
 
     def stop(self):

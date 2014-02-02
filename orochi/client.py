@@ -514,7 +514,6 @@ class PlayCommand(cmd.Cmd, object):
         """Signal handler for SIGUSR1. Advance to the next track, if
         available."""
         print('')
-        print('Song has ended!')
         if self.status['at_last_track']:
             print('Playlist has ended!')
             self.do_next_mix()
