@@ -20,6 +20,16 @@ Python).
 
     *Image courtesy of Gustavo Araujo*
 
+If you like this project, I'm happy for support via Flattr or Gittip!
+
+.. image:: http://api.flattr.com/button/flattr-badge-large.png
+    :alt: Flattr this repo
+    :target: https://flattr.com/submit/auto?user_id=danilo&url=https://github.com/dbrgn/orochi&title=orochi&tags=github,8tracks,music,python&category=software 
+
+.. image:: https://dbrgn.ch/gittip-badge.png
+    :alt: Gittip this repo
+    :target: https://www.gittip.com/dbrgn/
+
 
 Usage
 -----
