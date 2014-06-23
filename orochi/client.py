@@ -100,7 +100,7 @@ class ConfigFile(object):
         # Make sure to set permissions that don't allow anyone else to see
         # content.
         if not file_existed:
-            os.chmod(self.filename, 0600)
+            os.chmod(self.filename, 600)
 
     def get(self, *args):
         return self.config.get(*args)

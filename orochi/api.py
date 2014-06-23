@@ -148,10 +148,10 @@ class EightTracksAPI(object):
 
         """
         params = {
-                'sort': sort,
-                'page': page,
-                'per_page': per_page,
-                }
+            'sort': sort,
+            'page': page,
+            'per_page': per_page,
+        }
         resource = 'mixes.json'
 
         if query_type == 'tag':
