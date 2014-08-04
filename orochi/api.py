@@ -22,7 +22,7 @@ class EightTracksAPI(object):
         self.play_token = None
         self._user_token = None
 
-    def _get(self, resource, params={}, **kwargs):
+    def _get(self, resource, params=None, **kwargs):
         """Do a GET request to the specified API resource.
 
         After the query is sent, the HTTP status is verified (a non-200 status
@@ -53,6 +53,8 @@ class EightTracksAPI(object):
                 error message, the second argument is the entire JSON response.
 
         """
+        if params is None:
+            params = {}
         r = self.s.get(self.base_url + resource, params=params, **kwargs)
         try:
             r.raise_for_status()

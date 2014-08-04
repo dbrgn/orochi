@@ -470,7 +470,7 @@ class PlayCommand(cmd.Cmd, object):
         self.parent_cmd = parent_cmd
         self.api = parent_cmd.api
 
-        r = super(PlayCommand, self).__init__(*args, **kwargs)
+        super(PlayCommand, self).__init__(*args, **kwargs)
 
         # Initialize mplayer
         self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
@@ -485,8 +485,6 @@ class PlayCommand(cmd.Cmd, object):
         if self.parent_cmd.volume is not None:
             self.p.volume(self.parent_cmd.volume)
         self.do_status()
-
-        return r
 
     def cmdloop(self):
         """Exit subcmd with Ctrl+C."""
