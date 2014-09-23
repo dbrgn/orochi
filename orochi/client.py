@@ -4,6 +4,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 import sys
 import cmd
+import stat
 import json
 import signal
 from string import Template
@@ -100,7 +101,7 @@ class ConfigFile(object):
         # Make sure to set permissions that don't allow anyone else to see
         # content.
         if not file_existed:
-            os.chmod(self.filename, 600)
+            os.chmod(self.filename, stat.S_IRUSR | stat.S_IWUSR)
 
     def get(self, *args):
         return self.config.get(*args)
