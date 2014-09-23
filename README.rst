@@ -41,11 +41,11 @@ Prerequisites:
 
 Install::
 
-    $ pip install -r requirements.txt
+    $ pip install -U orochi
 
 Start::
 
-    $ python -m orochi.client
+    $ orochi
 
 Available commands (main menu)::
 
@@ -138,6 +138,15 @@ Example configuration::
     {
         "mplayer_extra_args": "-ao alsa:device=hw=1.0"
     }
+
+
+Development
+-----------
+
+Install ``requirements.txt`` (with ``pip install -r``). Then start orochi the
+following way::
+
+    $ python -m orochi.client
 
 
 Coding Guidelines
