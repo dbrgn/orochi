@@ -1,1 +1,3 @@
 include README.rst LICENSE AUTHORS requirements.txt
+recursive-include orochi *.py
+prune tests
