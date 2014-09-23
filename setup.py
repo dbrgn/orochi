@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import io
 from setuptools import setup, find_packages
 from orochi import meta
 
-f = open('requirements.txt', 'r')
-lines = f.readlines()
-requirements = [l.strip().strip('\n') for l in lines if l.strip() and not l.strip().startswith('#')]
-readme = open('README.rst').read()
+readme = io.open('README.rst', mode='r', encoding='utf8').read()
 
 setup(name='orochi',
       version=meta.version,
@@ -21,14 +19,14 @@ setup(name='orochi',
       license=meta.license,
       keywords='orochi music playlists 8tracks eighttracks mplayer player',
       long_description=readme,
-      install_requires=requirements,
+      install_requires=['requests>=1.2.0'],
       entry_points={
           'console_scripts': [
               '%s = orochi.client:main' % meta.title,
           ]
       },
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Environment :: Console',
           'License :: OSI Approved :: GNU General Public License (GPL)',
           'Natural Language :: English',
