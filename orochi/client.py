@@ -732,4 +732,13 @@ def main():
     client.cmdloop()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as ex:
+        if '--pdb' in sys.argv:
+            try:
+                import ipdb; ipdb.set_trace()
+            except ImportError:
+                import pdb; pdb.set_trace()
+        else:
+            raise

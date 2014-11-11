@@ -148,6 +148,9 @@ following way::
 
     $ python -m orochi.client
 
+For development and testing purposes, you can also pass in the ``--pdb``
+argument. Then a debug session should be started if orochi crashes.
+
 
 Coding Guidelines
 -----------------
