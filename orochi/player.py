@@ -12,6 +12,8 @@ try:
 except ImportError:  # Python < 3.3
     from pipes import quote
 
+import requests
+
 from .asyncproc import Process
 from .errors import TerminatedError, InitializationError
 
@@ -128,15 +130,18 @@ class MPlayer(object):
                 The path (url or filepath) to the file which should be played.
 
         """
+        # Resolve any redirects
+        url = requests.head(path, allow_redirects=True).url
+
         # Fix https URLs, which are not supported by mplayer
-        if path.startswith('https:'):
-            path = 'http:' + path[6:]
+        if url.startswith('https:'):
+            url = 'http:' + url[6:]
 
         # Stop previously started background threads
         self._stop_background_thread()
 
         # Load file, wait for command to finish
-        self._send_command('loadfile {}', path)
+        self._send_command('loadfile {}', url)
         start = time.time()
         while 1:
             if 'CPLAYER: Starting playback...' in self.p.read():
