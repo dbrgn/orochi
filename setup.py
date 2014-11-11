@@ -19,7 +19,7 @@ setup(name='orochi',
       license=meta.license,
       keywords='orochi music playlists 8tracks eighttracks mplayer player',
       long_description=readme,
-      install_requires=['requests>=1.2.0'],
+      install_requires=['requests>=1.2.0,<3'],
       entry_points={
           'console_scripts': [
               '%s = orochi.client:main' % meta.title,
