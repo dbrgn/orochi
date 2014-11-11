@@ -737,8 +737,10 @@ if __name__ == '__main__':
     except Exception as ex:
         if '--pdb' in sys.argv:
             try:
-                import ipdb; ipdb.set_trace()
+                import ipdb
+                ipdb.set_trace()
             except ImportError:
-                import pdb; pdb.set_trace()
+                import pdb
+                pdb.set_trace()
         else:
             raise
