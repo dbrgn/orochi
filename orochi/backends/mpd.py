@@ -23,7 +23,8 @@ logger = logging.getLogger('orochi')
 
 
 def catch_mpd_error(msg):
-    """Decorator to catch MPD exceptions and convert them into a custom
+    """
+    Decorator to catch MPD exceptions and convert them into a custom
     ``CommandError``.
 
     :param msg: The text to prepend to the exception message.
@@ -45,7 +46,8 @@ def catch_mpd_error(msg):
 
 
 def mpd_client_factory(timeout):
-    """Helper function to return a connected MPD client instance.
+    """
+    Helper function to return a connected MPD client instance.
 
     :param timeout: The number of seconds to wait for a command to finish. Default: 15.
     :type timeout: int
@@ -58,8 +60,9 @@ def mpd_client_factory(timeout):
 
 
 class StatusThread(threading.Thread):
-    """A thread that runs in the background to check for song ending."""
-
+    """
+    A thread that runs in the background to check for song ending.
+    """
     def __init__(self, host, port, timeout):
         super(StatusThread, self).__init__()
         self._stop = False
@@ -68,7 +71,9 @@ class StatusThread(threading.Thread):
         self.port = port
 
     def run(self):
-        """Start the thread."""
+        """
+        Start the thread.
+        """
         logger.debug('[status thread] Starting.')
 
         # Connect
@@ -105,19 +110,24 @@ class StatusThread(threading.Thread):
         logger.debug('[status thread] Exiting.')
 
     def stop(self):
-        """Stop the thread."""
+        """
+        Stop the thread.
+        """
         logger.debug('[status thread] Setting stop flag.')
         self._stop = True
 
     def is_stopped(self):
-        """Return whether the thread is stopped."""
+        """
+        Return whether the thread is stopped.
+        """
         return self._stop is True
 
 
 class MPDPlayer(Player):
 
     def __init__(self, timeout=15, *args, **kwargs):
-        """Create a new player process.
+        """
+        Create a new player process.
 
         :param timeout: The number of seconds to wait for a command to finish. Default: 15.
         :type timeout: int
@@ -137,7 +147,9 @@ class MPDPlayer(Player):
 
     @contextlib.contextmanager
     def connection(self):
-        """Context manager to connect to and disconnect from MPD."""
+        """
+        Context manager to connect to and disconnect from MPD.
+        """
         try:
             self.client.connect(self.host, self.port)
             yield
@@ -147,7 +159,8 @@ class MPDPlayer(Player):
 
     @catch_mpd_error('Could not load & play song.')
     def load(self, path):
-        """Load a file and play it.
+        """
+        Load a file and play it.
 
         :param path: The path (url or filepath) to the file which should be played.
         :type path: string
@@ -166,21 +179,26 @@ class MPDPlayer(Player):
 
     @catch_mpd_error('Could not play or pause song.')
     def playpause(self):
-        """Pause or resume the playback of a song."""
+        """
+        Pause or resume the playback of a song.
+        """
         logger.debug('[mpd player] Play/Pause.')
         with self.connection():
             self.client.pause()
 
     @catch_mpd_error('Could not stop playback.')
     def stop(self):
-        """Stop playback."""
+        """
+        Stop playback.
+        """
         logger.debug('[mpd player] Stop.')
         with self.connection():
             self.client.stop()
 
     @catch_mpd_error('Could not set volume.')
     def volume(self, amount):
-        """Set the playback volume to ``amount`` percent.
+        """
+        Set the playback volume to ``amount`` percent.
 
         :param amount: The volume level, must be a number between 0 and 100.
         :type amount: int
@@ -197,6 +215,8 @@ class MPDPlayer(Player):
             self.client.setvol(amount)
 
     def terminate(self):
-        """Terminate the instance."""
+        """
+        Terminate the instance.
+        """
         logger.debug('[mpd player] Terminating.')
         self.status_thread.stop()

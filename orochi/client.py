@@ -39,7 +39,8 @@ DEFAULT_PROMPT = ('(', '8tracks', ')> ')
 
 
 def get_prompt(mix):
-    """Return a prompt text based on the specified mix dictionary.
+    """
+    Return a prompt text based on the specified mix dictionary.
 
     Args:
         mix:
@@ -64,8 +65,10 @@ def get_prompt(mix):
 
 
 class ConfigFile(object):
-    """Wrap a json based config file. Behave like a dictionary. Persist data on
-    each write."""
+    """
+    Wrap a json based config file. Behave like a dictionary. Persist data on
+    each write.
+    """
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
              'autologin', 'results_per_page', 'results_sorting']
@@ -104,7 +107,9 @@ class ConfigFile(object):
         self._persist()
 
     def _persist(self):
-        """Write current configuration to file."""
+        """
+        Write current configuration to file.
+        """
         file_existed = os.path.isfile(self.filename)
         with open(self.filename, 'w') as configfile:
             configfile.write(json.dumps(self.config, indent=2))
@@ -118,7 +123,9 @@ class ConfigFile(object):
 
 
 class CmdExitMixin(object):
-    """A mixin for a Cmd instance that provides the exit and quit command."""
+    """
+    A mixin for a Cmd instance that provides the exit and quit command.
+    """
 
     def do_exit(self, s=''):
         print('Goodbye.')
@@ -172,7 +179,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         return super(Client, self).precmd(line)
 
     def cmdloop(self, intro=None):
-        """Ignore Ctrl+C."""
+        """
+        Ignore Ctrl+C.
+        """
         if intro is not None:
             self.intro = intro
         try:
@@ -182,7 +191,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             self.cmdloop(intro='')
 
     def emptyline(self):
-        """Don't repeat last command on empty line."""
+        """
+        Don't repeat last command on empty line.
+        """
         self.lastline_is_empty = True
 
         search_commands = ('search', 'search_tags', 'search_user',

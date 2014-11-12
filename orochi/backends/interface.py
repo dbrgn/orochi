@@ -14,36 +14,39 @@ class Player(object):
 
     @abc.abstractmethod
     def load(self, path):
-        """Load a file and play it.
+        """
+        Load a file and play it.
 
-        Args:
-            path:
-                The path (url or filepath) to the file which should be played.
+        :param path: The path (url or filepath) to the file which should be played.
+        :type path: string
 
         """
 
     @abc.abstractmethod
     def playpause(self):
-        """Pause or resume the playback of a song."""
+        """
+        Pause or resume the playback of a song.
+        """
 
     @abc.abstractmethod
     def stop(self):
-        """Stop playback."""
+        """
+        Stop playback.
+        """
 
     @abc.abstractmethod
     def volume(self, amount):
-        """Set the playback volume to ``amount`` percent.
+        """
+        Set the playback volume to ``amount`` percent.
 
-        Args:
-            amount:
-                The volume level, must be a number between 0 and 100.
-
-        Raises:
-            ValueError:
-                Raised when ``amount`` is invalid.
+        :param amount: The volume level, must be a number between 0 and 100.
+        :type amount: int
+        :raises ValueError: Raised when ``amount`` is invalid.
 
         """
 
     @abc.abstractmethod
     def terminate(self):
-        """Terminate the instance."""
+        """
+        Terminate the instance.
+        """
