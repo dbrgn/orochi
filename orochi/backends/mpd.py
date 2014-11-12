@@ -5,12 +5,13 @@ to the MPD server.
 """
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-import os
-import select
-import threading
+import contextlib
 import functools
 import logging
-import contextlib
+import os
+import select
+import socket
+import threading
 
 import mpd
 
@@ -151,11 +152,17 @@ class MPDPlayer(Player):
         Context manager to connect to and disconnect from MPD.
         """
         try:
-            self.client.connect(self.host, self.port)
+            try:
+                self.client.connect(self.host, self.port)
+            except (mpd.ConnectionError, socket.error) as e:
+                raise errors.InitializationError('Could not connect to mpd: %s' % e)
             yield
         finally:
-            self.client.close()
-            self.client.disconnect()
+            try:
+                self.client.close()
+                self.client.disconnect()
+            except mpd.ConnectionError:
+                pass
 
     @catch_mpd_error('Could not load & play song.')
     def load(self, path):
