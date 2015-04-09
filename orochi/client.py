@@ -53,7 +53,11 @@ class ConfigFile(object):
     each write."""
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
-             'autologin', 'results_per_page', 'results_sorting']
+                           'autologin', 'results_per_page', 'results_sorting']
+    DEFAULTS = {
+        'results_per_page': 10,
+        'results_sorting': 'hot',
+    }
 
     def __init__(self, filename=None):
         if not filename:
@@ -143,13 +147,17 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.total_pages = None
         self.query_type = None
 
-        if not self.config['results_per_page']:
-            self.config['results_per_page'] = self._results_per_page = 10
-        elif not self.config['results_sorting']:
-            self.config['results_sorting'] = self._results_sorting = 'hot'
-        else:
+        # Set some config defaults
+        if self.config['results_per_page']:
             self._results_per_page = self.config['results_per_page']
+        else:
+            default_value = ConfigFile.DEFAULTS.get('results_per_page')
+            self.config['results_per_page'] = self._results_per_page = default_value
+        if self.config['results_sorting']:
             self._results_sorting = self.config['results_sorting']
+        else:
+            default_value = ConfigFile.DEFAULTS.get('results_sorting')
+            self.config['results_sorting'] = self._results_sorting = default_value
 
         # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
