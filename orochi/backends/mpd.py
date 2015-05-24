@@ -14,6 +14,7 @@ import socket
 import threading
 
 import mpd
+import requests
 
 from .. import errors, signals
 from .interface import Player
@@ -164,6 +165,10 @@ class MPDPlayer(Player):
             except mpd.ConnectionError:
                 pass
 
+    def _resolve_redirects(self, url):
+        final_url = requests.head(url, allow_redirects=True).url
+        return final_url
+
     @catch_mpd_error('Could not load & play song.')
     def load(self, path):
         """
@@ -174,6 +179,8 @@ class MPDPlayer(Player):
 
         """
         logger.debug('[mpd player] Loading song {0}.'.format(path))
+        url = self._resolve_redirects(path)
+        logger.debug('[mpd player] URL resolves to {0}.'.format(url))
         with self.connection():
             # To prevent going back to the previous song (8tracks disallows it),
             # the playlist is cleared each time before loading the new track.
@@ -181,7 +188,9 @@ class MPDPlayer(Player):
                 self.client.clear()
             except mpd.CommandError as e:
                 raise errors.CommandError('Could not clear playlist: {!s}'.format(e))
-            self.client.add(path)
+            logger.debug('[mpd player/load] Adding url to mpd playlist')
+            self.client.add(url)
+            logger.debug('[mpd player/load] Playing url')
             self.client.play()
 
     @catch_mpd_error('Could not play or pause song.')
