@@ -7,6 +7,7 @@ import cmd
 import stat
 import json
 import signal
+import readline
 from string import Template
 from getpass import getpass
 
@@ -148,6 +149,15 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.total_pages = None
         self.query_type = None
 
+        # Readline history is saved to the same dir as config
+        self.history_filename = os.path.join(
+                os.path.dirname(self.config.filename),
+                "cmdhist")
+        try:
+            readline.read_history_file(self.history_filename)
+        except IOError:
+            pass  # Let it fail silently if there's no history
+
         # Set some config defaults
         if self.config['results_per_page']:
             self._results_per_page = self.config['results_per_page']
@@ -164,6 +174,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'], password=self.config['password'])
         return super(Client, self).preloop()
+
+    def postloop(self):
+        # Try to save readline history
+        try:
+            readline.write_history_file(self.history_filename)
+        except IOError:
+            pass  # Let it fail silently e.g. if no write perms
 
     def precmd(self, line):
         self.lastline_is_empty = False
@@ -624,7 +641,8 @@ class PlayCommand(cmd.Cmd, object):
             parts.append('from the album {}'.format(bold(track['release_name'].strip())))
         if track['year']:
             parts.append('({0[year]})'.format(track))
-        print(' '.join(parts) + '.')
+        status = ' '.join(parts) + '.'
+        print(status)
 
     def help_status(self):
         print('Show the status of the currently playing song.')
