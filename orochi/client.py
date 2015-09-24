@@ -17,7 +17,7 @@ from requests import HTTPError, ConnectionError
 from .api import EightTracksAPI, APIError
 from .player import MPlayer
 from .errors import InitializationError, TerminatedError
-from .colors import bold
+from .colors import bold, title
 from .xdg import get_orochi_xdg_dir
 
 PY3 = sys.version_info > (3,)
@@ -56,10 +56,12 @@ class ConfigFile(object):
     each write."""
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
-                           'autologin', 'results_per_page', 'results_sorting']
+                           'autologin', 'results_per_page', 'results_sorting',
+                           'terminal_title']
     DEFAULTS = {
         'results_per_page': 10,
         'results_sorting': 'hot',
+        'terminal_title': 'yes',
     }
 
     def __init__(self, filename=None):
@@ -308,11 +310,16 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self.config['username'] = ''
             else:
                 self.help_set_autologin()
+        elif setting == 'title':
+            if param in ('yes', 'no'):
+                self.config['terminal_title'] = param
+            else:
+                self.help_set_title()
 
     def help_set(self):
         print('Syntax: set <setting> <param>')
         print('Configure settings.')
-        print('Settings available: sorting, results_per_page, autologin.')
+        print('Settings available: sorting, results_per_page, autologin, title.')
         print('To get help for each setting, press enter with no <param>.')
 
     def help_set_sorting(self):
@@ -329,9 +336,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def help_set_autologin(self):
         print('Syntax: set autologin yes|no')
-        print('Toggle autologin on start (no by default).')
+        print('Toggle autologin on start ("no" by default).')
         print('WARNING: password will be saved in plain text.')
         print('When toggled off, password and username are deleted from config.')
+
+    def help_set_title(self):
+        print('Syntax: set title yes|no')
+        print('Toggle setting terminal title to song status ("yes" by default).')
 
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
@@ -499,6 +510,14 @@ class PlayCommand(cmd.Cmd, object):
 
         super(PlayCommand, self).__init__(*args, **kwargs)
 
+        # Check default configs
+        self.config = config
+        if self.config['terminal_title']:
+            self._terminal_title = self.config['terminal_title']
+        else:
+            default_value = ConfigFile.DEFAULTS.get('terminal_title')
+            self.config['terminal_title'] = self._terminal_title = default_value
+
         # Initialize mplayer
         self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
 
@@ -641,6 +660,10 @@ class PlayCommand(cmd.Cmd, object):
         if track['year']:
             parts.append('({0[year]})'.format(track))
         status = ' '.join(parts) + '.'
+        if self._terminal_title == 'yes':
+            status += title('Now playing {name} by {performer}'.format(
+                name=track['name'].strip(),
+                performer=track['performer'].strip()))
         print(status)
 
     def help_status(self):
