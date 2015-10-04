@@ -216,6 +216,12 @@ class MPlayer(object):
         """Shut down mplayer and replace the reference to the async process
         with a dummy instance that raises a :class:`RuntimeError` on any method
         call."""
+
+        if isinstance(self.p, DeadMPlayer):
+            # self.terminate may be call explicitely *and* implicitely,
+            # through self.__del__.
+            return
+
         if hasattr(self, 'p') and hasattr(self.p, 'terminate'):
             self._stop_background_thread()
             self.p.terminate()
