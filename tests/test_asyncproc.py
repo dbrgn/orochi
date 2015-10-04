@@ -27,4 +27,4 @@ sys.exit()
     output = subprocess.check_output([sys.executable, "-Ec", code],
                                      stderr=subprocess.STDOUT)
 
-    assert 'Exception TypeError' not in output
+    assert 'Exception TypeError' not in output.decode("ascii")
