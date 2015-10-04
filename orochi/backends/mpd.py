@@ -90,7 +90,7 @@ class StatusThread(threading.Thread):
         # Set the timeout for the select() command in seconds. This allows the
         # ``self._stop`` flag to be checked regularly. Not doing so would
         # result in an indefinitely blocked client if something goes wrong.
-        select_timeout = 1.0
+        select_timeout = 3.0
 
         while not self._stop:
             # Do a select() call to see if socket is ready
@@ -152,25 +152,24 @@ class MPDPlayer(Player):
         """
         Context manager to connect to and disconnect from MPD.
         """
-        with threading.Lock():
+        try:
             try:
-                try:
-                    logger.debug('[mpd player/connection] Connecting to MPD...')
-                    self.client.connect(self.host, self.port)
-                except (mpd.ConnectionError, socket.error) as e:
-                    logger.debug('[mpd player/connection] Exception %r while connecting' % e)
-                    raise errors.InitializationError('Could not connect to mpd: %s' % e)
-                logger.debug('[mpd player/connection] Connected to MPD')
-                yield
-            finally:
-                try:
-                    logger.debug('[mpd player/connection] Disconnecting from MPD')
-                    self.client.close()
-                    self.client.disconnect()
-                    logger.debug('[mpd player/connection] Disconnected from MPD')
-                except mpd.ConnectionError:
-                    logger.debug('[mpd player/connection] mpd.ConnectionError')
-                    pass
+                logger.debug('[mpd player/connection] Connecting to MPD...')
+                self.client.connect(self.host, self.port)
+            except (mpd.ConnectionError, socket.error) as e:
+                logger.debug('[mpd player/connection] Exception %r while connecting' % e)
+                raise errors.InitializationError('Could not connect to mpd: %s' % e)
+            logger.debug('[mpd player/connection] Connected to MPD')
+            yield
+        finally:
+            try:
+                logger.debug('[mpd player/connection] Disconnecting from MPD')
+                self.client.close()
+                self.client.disconnect()
+                logger.debug('[mpd player/connection] Disconnected from MPD')
+            except mpd.ConnectionError:
+                logger.debug('[mpd player/connection] mpd.ConnectionError')
+                pass
 
     def _resolve_redirects(self, url):
         final_url = requests.head(url, allow_redirects=True).url

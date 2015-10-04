@@ -525,7 +525,7 @@ class PlayCommand(cmd.Cmd, object):
         """Signal handler for SIGUSR1. Advance to the next track, if
         available."""
         print('')
-        if self.status['at_last_track']:
+        if self.status['at_last_track'] or self.status['at_end']:
             print('Playlist has ended!')
             self.do_next_mix()
         else:
@@ -535,6 +535,9 @@ class PlayCommand(cmd.Cmd, object):
             except RuntimeError as e:
                 print('*** RuntimeError: {}'.format(e))
                 self.do_stop()
+            except KeyError as e:
+                logger.debug('[client] Could not play next song', exc_info=True)
+                print('*** KeyError: {}'.format(e))
             self.do_status()
         print(self.prompt, end='')
         sys.stdout.flush()
@@ -579,7 +582,7 @@ class PlayCommand(cmd.Cmd, object):
             print('Sorry, skipping not allowed due to legal reasons. You may only skip '
                   '3 times during a 60 minute time frame.')
             print('See http://8tracks.com/licensing for more information.')
-        elif self.status['at_last_track']:
+        elif self.status['at_last_track'] or self.status['at_end']:
             print('Playlist has ended!')
             return True
         else:
