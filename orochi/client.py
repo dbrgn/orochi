@@ -18,6 +18,7 @@ from .player import MPlayer
 from .errors import InitializationError, TerminatedError
 from .colors import bold
 
+PY3 = sys.version_info > (3,)
 
 # Tuple containing prefix, main text and suffix for command line prompt
 DEFAULT_PROMPT = ('(', '8tracks', ')> ')
@@ -75,7 +76,7 @@ class ConfigFile(object):
             self.config = {}
         else:
             with open(self.filename, 'r') as configfile:
-                conf = ' '.join(configfile.xreadlines())
+                conf = ' '.join(configfile.readlines())
                 if conf == '':
                     self.config = {}
                 else:
@@ -368,7 +369,11 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 return
             except HTTPError as e:
                 print('*** HTTP Error: {}'.format(e))
-            i.prompt = get_prompt(mix).encode('utf8')
+
+            i.prompt = get_prompt(mix)
+            if not PY3:
+                i.prompt = i.prompt.encode('utf8')
+
             i.cmdloop()
 
     def help_play(self):
@@ -583,7 +588,10 @@ class PlayCommand(cmd.Cmd, object):
         print('Skipping to the next mix...')
         mix = self.api.next_mix(self.mix_id)
         self.mix_id = mix['id']
-        self.prompt = get_prompt(mix).encode('utf8')
+        self.prompt = get_prompt(mix)
+
+        if not PY3:
+            self.prompt = self.prompt.encode('utf8')
 
         self.status = self.api.play_mix(self.mix_id)
         self.p.load(self.status['track']['url'])

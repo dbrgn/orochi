@@ -247,14 +247,24 @@ class Process(object):
         except Timeout:
             pass
 
-        self.kill(signal.SIGKILL)
+        try:
+            self.kill(signal.SIGKILL)
+        except OSError as e:
+            if e.errno == errno.ECHILD:
+                # ignore, there might be a race condition with
+                # with_timeout(graceperiod, self.wait):
+                # if self.wait terminates *after* graceperiod,
+                # the process is already dead and kill fails.
+                pass
+            else:
+                raise e
         return self.wait()
 
     def __reader(self, collector, source):
         """Read data from source until EOF, adding it to collector.
         """
         while True:
-            data = os.read(source.fileno(), 65536)
+            data = os.read(source.fileno(), 65536).decode("ascii")
             self.__lock.acquire()
             collector.append(data)
             self.__lock.release()
@@ -269,13 +279,14 @@ class Process(object):
         while True:
             self.__inputsem.acquire()
             self.__lock.acquire()
-            if not pending  and         self.__quit:
+            if not pending and self.__quit:
                 drain.close()
                 self.__lock.release()
                 break
             data = pending.pop(0)
             self.__lock.release()
-            drain.write(data)
+            drain.write(data.encode("ascii"))
+            drain.flush()
 
     def read(self):
         """Read data written by the process to its standard output.
