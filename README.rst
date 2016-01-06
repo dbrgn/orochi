@@ -43,6 +43,18 @@ Python).
     *Image courtesy of Gustavo Araujo*
 
 
+Installing
+----------
+
+Using pip::
+
+    $ sudo pip install -U orochi
+
+If you're an ArchLinux user, you can also install ``orochi`` from AUR::
+
+    $ yaourt -S orochi
+
+
 Usage
 -----
 
@@ -50,10 +62,6 @@ Prerequisites:
 
 - Python 2.7+ and 3.3+
 - mplayer (at least r27665, released in 1.0rc3)
-
-Install::
-
-    $ pip install -U orochi
 
 Start::
 
