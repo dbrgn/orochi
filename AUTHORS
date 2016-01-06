@@ -8,7 +8,23 @@ Contributors
 ============
 
 Chris van Dijk (@quigybo)
+
+ - Many code fixes, improvements, enhancements
+
 Breland Miley (@mindstorms6)
+
+ - Support for play by mix ID / URL
+
 octogene (@octogene)
+
+ - Support for login and liking / favoriting
+ - Search improvements
+ - Bugfixes
+
 Kevin P (@wazari972)
+
+ - Python 3 port
+
 Roey Darwish Dror (@r-darwish)
+
+ - Testing and additional metadata
