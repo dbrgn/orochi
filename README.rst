@@ -1,11 +1,33 @@
 Orochi – 8tracks.com client
 ===========================
 
-**Warning: Beta quality!**
-
-.. image:: https://secure.travis-ci.org/dbrgn/orochi.png?branch=master
+.. image:: https://img.shields.io/travis/dbrgn/orochi/master.svg
     :alt: Build status
     :target: http://travis-ci.org/dbrgn/orochi
+
+.. image:: https://img.shields.io/pypi/v/orochi.svg
+    :alt: PyPI version
+    :target: https://pypi.python.org/pypi/orochi/
+
+.. image:: https://img.shields.io/pypi/pyversions/orochi.svg
+    :alt: PyPI Python versions
+    :target: https://pypi.python.org/pypi/orochi/
+
+.. image:: https://img.shields.io/pypi/l/orochi.svg
+    :alt: PyPI license
+    :target: https://pypi.python.org/pypi/orochi/
+
+.. image:: https://img.shields.io/pypi/wheel/orochi.svg
+    :alt: PyPI wheel
+    :target: https://pypi.python.org/pypi/orochi/
+
+.. image:: https://img.shields.io/pypi/dm/orochi.svg
+    :alt: PyPI downloads per month
+    :target: https://pypi.python.org/pypi/orochi/
+
+.. image:: https://img.shields.io/bountysource/team/orochi/activity.svg
+    :alt: Bounties
+    :target: https://www.bountysource.com/teams/orochi/issues
 
 Orochi is a command line client for `8tracks.com <http://8tracks.com/>`__
 written in Python.
@@ -19,16 +41,6 @@ Python).
     :alt: Illustration of Yamata no Orochi
 
     *Image courtesy of Gustavo Araujo*
-
-If you like this project, I'm happy for support via Flattr or Gittip!
-
-.. image:: http://api.flattr.com/button/flattr-badge-large.png
-    :alt: Flattr this repo
-    :target: https://flattr.com/submit/auto?user_id=danilo&url=https://github.com/dbrgn/orochi&title=orochi&tags=github,8tracks,music,python&category=software 
-
-.. image:: https://dbrgn.ch/gittip-badge.png
-    :alt: Gittip this repo
-    :target: https://www.gittip.com/dbrgn/
 
 
 Usage
