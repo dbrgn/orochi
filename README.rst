@@ -36,7 +36,7 @@ Usage
 
 Prerequisites:
 
-- Python 2.7+ (compatibility for 3.2+ will probably follow in the future)
+- Python 2.7+ and 3.3+
 - mplayer (at least r27665, released in 1.0rc3)
 
 Install::
