@@ -6,6 +6,10 @@ Possible log types are ``[add]``, ``[bug]``, ``[change]`` and ``[info]``.
 
 ---
 
+UNRELEASED
+
+- [add] Persist readline history
+
 v0.1.3 (2016-01-06)
 
 - [add] Python 3 compatibility

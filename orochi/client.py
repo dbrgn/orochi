@@ -18,6 +18,7 @@ from .api import EightTracksAPI, APIError
 from .player import MPlayer
 from .errors import InitializationError, TerminatedError
 from .colors import bold
+from .xdg import get_orochi_xdg_dir
 
 PY3 = sys.version_info > (3,)
 
@@ -63,12 +64,8 @@ class ConfigFile(object):
 
     def __init__(self, filename=None):
         if not filename:
-            xdg_config_home = os.environ.get('XDG_CONFIG_HOME')
-            if not xdg_config_home:
-                xdg_config_home = os.path.join(os.path.expanduser('~'), '.config')
-            configdir = os.path.join(xdg_config_home, 'orochi')
-            if not os.path.isdir(configdir):
-                os.makedirs(configdir)
+            # Default filename is inside XDG_CONFIG_HOME
+            configdir = get_orochi_xdg_dir('XDG_CONFIG_HOME', '.config')
             filename = os.path.join(configdir, 'config.json')
         self.filename = filename
 
@@ -149,10 +146,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.total_pages = None
         self.query_type = None
 
-        # Readline history is saved to the same dir as config
-        self.history_filename = os.path.join(
-                os.path.dirname(self.config.filename),
-                "cmdhist")
+        # Readline history is saved to the XDG cache dir
+        cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
+        self.history_filename = os.path.join(cachedir, 'readline_hist')
         try:
             readline.read_history_file(self.history_filename)
         except IOError:
