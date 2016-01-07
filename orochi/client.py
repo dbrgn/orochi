@@ -171,6 +171,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'], password=self.config['password'])
+
         return super(Client, self).preloop()
 
     def postloop(self):
@@ -179,6 +180,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             readline.write_history_file(self.history_filename)
         except IOError:
             pass  # Let it fail silently e.g. if no write perms
+
+        return super(Client, self).postloop()
 
     def precmd(self, line):
         self.lastline_is_empty = False
