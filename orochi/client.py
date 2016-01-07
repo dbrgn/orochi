@@ -17,7 +17,7 @@ from requests import HTTPError, ConnectionError
 from .api import EightTracksAPI, APIError
 from .player import MPlayer
 from .errors import InitializationError, TerminatedError
-from .colors import bold
+from .colors import bold, title
 from .xdg import get_orochi_xdg_dir
 
 PY3 = sys.version_info > (3,)
@@ -51,15 +51,26 @@ def get_prompt(mix):
     return ''.join(parts)
 
 
+def set_term_title(text):
+    """Set the ANSI terminal title."""
+    out = 'Orochi'
+    if text:
+        out = '%s | %s' % (text, out)
+    print(title(out), end='')
+    sys.stdout.flush()
+
+
 class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
-                           'autologin', 'results_per_page', 'results_sorting']
+                           'autologin', 'results_per_page', 'results_sorting',
+                           'terminal_title']
     DEFAULTS = {
         'results_per_page': 10,
         'results_sorting': 'hot',
+        'terminal_title': True,
     }
 
     def __init__(self, filename=None):
@@ -146,6 +157,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self.total_pages = None
         self.query_type = None
 
+        # Initialize terminal title
+        set_term_title(None)
+
         # Readline history is saved to the XDG cache dir
         cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
         self.history_filename = os.path.join(cachedir, 'readline_hist')
@@ -169,6 +183,7 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         # Try to login if autologin is on.
         if self.config['username'] and self.config['password'] and self.config['autologin']:
             self.do_login(self.config['username'], password=self.config['password'])
+
         return super(Client, self).preloop()
 
     def postloop(self):
@@ -177,6 +192,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             readline.write_history_file(self.history_filename)
         except IOError:
             pass  # Let it fail silently e.g. if no write perms
+
+        return super(Client, self).postloop()
 
     def precmd(self, line):
         self.lastline_is_empty = False
@@ -308,11 +325,18 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self.config['username'] = ''
             else:
                 self.help_set_autologin()
+        elif setting == 'terminal_title':
+            if param == 'yes':
+                self.config['terminal_title'] = True
+            elif param == 'no':
+                self.config['terminal_title'] = False
+            else:
+                self.help_set_terminal_title()
 
     def help_set(self):
         print('Syntax: set <setting> <param>')
         print('Configure settings.')
-        print('Settings available: sorting, results_per_page, autologin.')
+        print('Settings available: sorting, results_per_page, autologin, terminal_title.')
         print('To get help for each setting, press enter with no <param>.')
 
     def help_set_sorting(self):
@@ -329,9 +353,13 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
     def help_set_autologin(self):
         print('Syntax: set autologin yes|no')
-        print('Toggle autologin on start (no by default).')
+        print('Toggle autologin on start ("no" by default).')
         print('WARNING: password will be saved in plain text.')
         print('When toggled off, password and username are deleted from config.')
+
+    def help_set_terminal_title(self):
+        print('Syntax: set terminal_title yes|no')
+        print('Toggle setting terminal title to song status ("yes" by default).')
 
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
@@ -388,6 +416,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 i.prompt = i.prompt.encode('utf8')
 
             i.cmdloop()
+
+            # Reset title
+            set_term_title(None)
 
     def help_play(self):
         print('Syntax: play <mix>')
@@ -498,6 +529,14 @@ class PlayCommand(cmd.Cmd, object):
         self.api = parent_cmd.api
 
         super(PlayCommand, self).__init__(*args, **kwargs)
+
+        # Check default configs
+        self.config = config
+        if self.config['terminal_title']:
+            self._terminal_title = self.config['terminal_title']
+        else:
+            default_value = ConfigFile.DEFAULTS.get('terminal_title')
+            self.config['terminal_title'] = self._terminal_title = default_value
 
         # Initialize mplayer
         self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
@@ -629,19 +668,25 @@ class PlayCommand(cmd.Cmd, object):
         print('Change playback volume. The argument must be a number between 0 and 100.')
 
     def do_status(self, s=''):
+        # Get and clean track info
         track = self.status['track']
+        track_name = track['name'].strip()
+        track_performer = track['performer'].strip()
+        track_album = track.get('release_name', '').strip()
+        track_year = track.get('year')
+
+        # Build and print status output
         parts = []
-        bold_track = {
-            'name': bold(track['name'].strip()),
-            'performer': bold(track['performer'].strip()),
-        }
-        parts.append('Now playing {0[name]} by {0[performer]}'.format(bold_track))
-        if track['release_name']:
-            parts.append('from the album {}'.format(bold(track['release_name'].strip())))
-        if track['year']:
-            parts.append('({0[year]})'.format(track))
-        status = ' '.join(parts) + '.'
-        print(status)
+        parts.append('Now playing %s by %s' % (bold(track_name), bold(track_performer)))
+        if track_album:
+            parts.append('from the album %s' % bold(track_album))
+        if track_year:
+            parts.append('(%s)' % track_year)
+        print(' '.join(parts) + '.')
+
+        # Set terminal title to song info
+        if self._terminal_title is True:
+            set_term_title('Now playing "%s" by "%s"' % (track_name, track_performer))
 
     def help_status(self):
         print('Show the status of the currently playing song.')
