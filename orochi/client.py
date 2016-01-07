@@ -650,22 +650,26 @@ class PlayCommand(cmd.Cmd, object):
         print('Change playback volume. The argument must be a number between 0 and 100.')
 
     def do_status(self, s=''):
+        # Get and clean track info
         track = self.status['track']
+        track_name = track['name'].strip()
+        track_performer = track['performer'].strip()
+        track_album = track.get('release_name', '').strip()
+        track_year = track.get('year')
+
+        # Build status output
         parts = []
-        bold_track = {
-            'name': bold(track['name'].strip()),
-            'performer': bold(track['performer'].strip()),
-        }
-        parts.append('Now playing {0[name]} by {0[performer]}'.format(bold_track))
-        if track['release_name']:
-            parts.append('from the album {}'.format(bold(track['release_name'].strip())))
-        if track['year']:
-            parts.append('({0[year]})'.format(track))
+        parts.append('Now playing %s by %s' % (bold(track_name), bold(track_performer)))
+        if track_album:
+            parts.append('from the album %s' % bold(track_album))
+        if track_year:
+            parts.append('(%s)' % track_year)
         status = ' '.join(parts) + '.'
+
+        # Append terminal title
         if self._terminal_title is True:
-            status += title('Now playing {name} by {performer}'.format(
-                name=track['name'].strip(),
-                performer=track['performer'].strip()))
+            status += title('Now playing "%s" by "%s"' % (track_name, track_performer))
+
         print(status)
 
     def help_status(self):
