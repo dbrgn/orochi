@@ -9,6 +9,7 @@ Possible log types are ``[add]``, ``[bug]``, ``[change]`` and ``[info]``.
 UNRELEASED
 
 - [add] Persist readline history
+- [add] Set terminal title to song status
 
 v0.1.3 (2016-01-06)
 
