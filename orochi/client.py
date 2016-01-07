@@ -51,6 +51,15 @@ def get_prompt(mix):
     return ''.join(parts)
 
 
+def set_term_title(text):
+    """Set the ANSI terminal title."""
+    out = 'Orochi'
+    if text:
+        out = '%s | %s' % (text, out)
+    print(title(out), end='')
+    sys.stdout.flush()
+
+
 class ConfigFile(object):
     """Wrap a json based config file. Behave like a dictionary. Persist data on
     each write."""
@@ -147,6 +156,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         self._search_results_page = 1
         self.total_pages = None
         self.query_type = None
+
+        # Initialize terminal title
+        set_term_title(None)
 
         # Readline history is saved to the XDG cache dir
         cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
@@ -405,6 +417,9 @@ class Client(CmdExitMixin, cmd.Cmd, object):
 
             i.cmdloop()
 
+            # Reset title
+            set_term_title(None)
+
     def help_play(self):
         print('Syntax: play <mix>')
         print('The <mix> argument can either be a search result number from the last search,')
@@ -660,20 +675,18 @@ class PlayCommand(cmd.Cmd, object):
         track_album = track.get('release_name', '').strip()
         track_year = track.get('year')
 
-        # Build status output
+        # Build and print status output
         parts = []
         parts.append('Now playing %s by %s' % (bold(track_name), bold(track_performer)))
         if track_album:
             parts.append('from the album %s' % bold(track_album))
         if track_year:
             parts.append('(%s)' % track_year)
-        status = ' '.join(parts) + '.'
+        print(' '.join(parts) + '.')
 
-        # Append terminal title
+        # Set terminal title to song info
         if self._terminal_title is True:
-            status += title('Now playing "%s" by "%s"' % (track_name, track_performer))
-
-        print(status)
+            set_term_title('Now playing "%s" by "%s"' % (track_name, track_performer))
 
     def help_status(self):
         print('Show the status of the currently playing song.')
