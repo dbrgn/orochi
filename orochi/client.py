@@ -528,6 +528,9 @@ class PlayCommand(cmd.Cmd, object):
             except RuntimeError as e:
                 print('*** RuntimeError: {}'.format(e))
                 self.do_stop()
+            except KeyError as e:
+                print('*** Error: Missing song information in API response. Skipping mix.')
+                self.do_next_mix()
             self.do_status()
         print(self.prompt, end='')
         sys.stdout.flush()
