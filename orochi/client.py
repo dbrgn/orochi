@@ -61,7 +61,7 @@ class ConfigFile(object):
     DEFAULTS = {
         'results_per_page': 10,
         'results_sorting': 'hot',
-        'terminal_title': 'yes',
+        'terminal_title': True,
     }
 
     def __init__(self, filename=None):
@@ -311,8 +311,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
             else:
                 self.help_set_autologin()
         elif setting == 'terminal_title':
-            if param in ('yes', 'no'):
-                self.config['terminal_title'] = param
+            if param == 'yes':
+                self.config['terminal_title'] = True
+            elif param == 'no':
+                self.config['terminal_title'] = False
             else:
                 self.help_set_terminal_title()
 
@@ -660,7 +662,7 @@ class PlayCommand(cmd.Cmd, object):
         if track['year']:
             parts.append('({0[year]})'.format(track))
         status = ' '.join(parts) + '.'
-        if self._terminal_title == 'yes':
+        if self._terminal_title is True:
             status += title('Now playing {name} by {performer}'.format(
                 name=track['name'].strip(),
                 performer=track['performer'].strip()))
