@@ -15,6 +15,8 @@ class EightTracksAPI(object):
         self.base_url = 'https://8tracks.com/'
         self.s = requests.Session()
         self.s.headers.update({
+            # Don't misuse this key. Don't use it for anything other than Orochi.
+            # Otherwise you'll break Orochi for all its users.
             'X-Api-Key': 'da88fbe6cfd1996c0b6391372a8c7f3eb2dbc5be',
             'X-Api-Version': 2,
             'Accept': 'application/json',
