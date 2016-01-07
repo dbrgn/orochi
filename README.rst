@@ -100,6 +100,8 @@ Available commands (main menu)::
           Configure search results sorting order.
         - results_per_page <n>
           Set number of results per page showed.
+        - terminal_title yes|no (yes by default)
+          Toggle setting terminal title to song status.
         To get help for each setting, press Enter with no <param>.
     play:
         Syntax: play <mix>
