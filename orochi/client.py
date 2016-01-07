@@ -310,16 +310,16 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self.config['username'] = ''
             else:
                 self.help_set_autologin()
-        elif setting == 'title':
+        elif setting == 'terminal_title':
             if param in ('yes', 'no'):
                 self.config['terminal_title'] = param
             else:
-                self.help_set_title()
+                self.help_set_terminal_title()
 
     def help_set(self):
         print('Syntax: set <setting> <param>')
         print('Configure settings.')
-        print('Settings available: sorting, results_per_page, autologin, title.')
+        print('Settings available: sorting, results_per_page, autologin, terminal_title.')
         print('To get help for each setting, press enter with no <param>.')
 
     def help_set_sorting(self):
@@ -340,8 +340,8 @@ class Client(CmdExitMixin, cmd.Cmd, object):
         print('WARNING: password will be saved in plain text.')
         print('When toggled off, password and username are deleted from config.')
 
-    def help_set_title(self):
-        print('Syntax: set title yes|no')
+    def help_set_terminal_title(self):
+        print('Syntax: set terminal_title yes|no')
         print('Toggle setting terminal title to song status ("yes" by default).')
 
     def do_play(self, s):
