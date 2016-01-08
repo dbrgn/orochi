@@ -1,11 +1,20 @@
 language: python
 sudo: false
+os:
+  - linux
+  - osx
 python:
-    - 2.7
-    - 3.3
-    - 3.4
-    - 3.5
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+matrix:
+  exclude:
+    - os: osx
+      python: 3.3
+    - os: osx
+      python: 3.4
 install:
-    - pip install -r requirements-dev.txt
+  - pip install -r requirements-dev.txt
 script:
-    - py.test
+  - py.test
