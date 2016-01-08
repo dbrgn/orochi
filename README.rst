@@ -50,7 +50,9 @@ Using pip::
 
     $ sudo pip install -U orochi
 
-If you're an ArchLinux user, you can also install ``orochi`` from AUR::
+If you're an ArchLinux user, you can also install
+[orochi](https://aur.archlinux.org/packages/orochi/) or
+[orochi-git](https://aur.archlinux.org/packages/orochi-git/) from AUR::
 
     $ yaourt -S orochi
 
