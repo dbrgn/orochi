@@ -19,6 +19,7 @@ from .player import MPlayer
 from .errors import InitializationError, TerminatedError
 from .colors import bold, title
 from .xdg import get_orochi_xdg_dir
+from . import meta
 
 PY3 = sys.version_info > (3,)
 
@@ -810,6 +811,12 @@ def main():
     client.cmdloop()
 
 if __name__ == '__main__':
+
+    # Handle version printing
+    if '-v' in sys.argv or '--version' in sys.argv:
+        print('%s v%s' % (meta.title, meta.version))
+        sys.exit(0)
+
     try:
         main()
     except Exception as ex:
