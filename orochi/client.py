@@ -671,7 +671,7 @@ class PlayCommand(cmd.Cmd, object):
         # Get and clean track info
         track = self.status['track']
         track_name = track['name'].strip()
-        track_performer = track['performer'].strip()
+        track_performer = track.get('performer', 'Unknown Artist').strip()
         track_album = track.get('release_name', '').strip()
         track_year = track.get('year')
 
