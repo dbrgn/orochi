@@ -807,10 +807,6 @@ class PlayCommand(cmd.Cmd, object):
 
 
 def main():
-    client = Client()
-    client.cmdloop()
-
-if __name__ == '__main__':
 
     # Handle version printing
     if '-v' in sys.argv or '--version' in sys.argv:
@@ -818,10 +814,15 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        main()
-    except Exception as ex:
+        client = Client()
+        client.cmdloop()
+    except Exception:
         if '--pdb' in sys.argv:
             import pdb
             pdb.set_trace()
         else:
             raise
+
+
+if __name__ == '__main__':
+    main()
