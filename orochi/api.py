@@ -160,7 +160,7 @@ class EightTracksAPI(object):
 
         if query_type == 'tag':
             parts = query.split(',')
-            tags = filter(None, map(lambda p: p.strip(), parts))
+            tags = [p.strip() for p in parts if p]
             if len(tags) < 1:
                 params['tag'] = query
             else:
