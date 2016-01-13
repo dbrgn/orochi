@@ -67,11 +67,12 @@ class ConfigFile(object):
 
     DEFAULT_CONFIG_KEYS = ['mplayer_extra_arguments', 'username', 'password',
                            'autologin', 'results_per_page', 'results_sorting',
-                           'terminal_title']
+                           'terminal_title', 'log_current_song']
     DEFAULTS = {
         'results_per_page': 10,
         'results_sorting': 'hot',
         'terminal_title': True,
+        'log_current_song': False,
     }
 
     def __init__(self, filename=None):
@@ -333,11 +334,19 @@ class Client(CmdExitMixin, cmd.Cmd, object):
                 self.config['terminal_title'] = False
             else:
                 self.help_set_terminal_title()
+        elif setting == 'log_current_song':
+            if param == 'yes':
+                self.config['log_current_song'] = True
+            elif param == 'no':
+                self.config['log_current_song'] = False
+            else:
+                self.help_set_log_current_song()
 
     def help_set(self):
         print('Syntax: set <setting> <param>')
         print('Configure settings.')
-        print('Settings available: sorting, results_per_page, autologin, terminal_title.')
+        print('Settings available: sorting, results_per_page, autologin,')
+        print('                    terminal_title, log_current_song')
         print('To get help for each setting, press enter with no <param>.')
 
     def help_set_sorting(self):
@@ -361,6 +370,10 @@ class Client(CmdExitMixin, cmd.Cmd, object):
     def help_set_terminal_title(self):
         print('Syntax: set terminal_title yes|no')
         print('Toggle setting terminal title to song status ("yes" by default).')
+
+    def help_set_log_current_song(self):
+        print('Syntax: set log_current_song yes|no')
+        print('Toggle setting log current song to file ~/.cache/orochi/current_song.txt')
 
     def do_play(self, s):
         # The logic could be simplified here, and not have to re-catch all the exceptions
@@ -539,6 +552,12 @@ class PlayCommand(cmd.Cmd, object):
             default_value = ConfigFile.DEFAULTS.get('terminal_title')
             self.config['terminal_title'] = self._terminal_title = default_value
 
+        if self.config['log_current_song']:
+            self._log_current_song = self.config['log_current_song']
+        else:
+            default_value = ConfigFile.DEFAULTS.get('log_current_song')
+            self.config['log_current_song'] = self._log_current_song = default_value
+
         # Initialize mplayer
         self.p = MPlayer(extra_arguments=config['mplayer_extra_arguments'])
 
@@ -684,6 +703,15 @@ class PlayCommand(cmd.Cmd, object):
         if track_year:
             parts.append('(%s)' % track_year)
         print(' '.join(parts) + '.')
+
+        # Log the current song to a file (can be used by other programs)
+        if self._log_current_song is True:
+            cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
+            filename = os.path.join(cachedir, 'current_song.txt')
+            track_attributes = (track_name, track_performer, track_album, track_year)
+            track_attributes = ['' if v is None else v for v in track_attributes]
+            with open(filename, 'w') as songfile:
+                songfile.write(u'\n'.join(track_attributes).encode('utf-8').strip())
 
         # Set terminal title to song info
         if self._terminal_title is True:

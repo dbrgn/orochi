@@ -10,9 +10,10 @@ UNRELEASED
 
 - [add] Persist readline history
 - [add] Set terminal title to song status
+- [add] Support ``-v`` / ``--version`` argument
+- [add] Log currently played song to a file (#72)
 - [bug] Fixed bug that occurs if a track doesn't have an artist specified (#68)
 - [bug] Fixed ``search_tags`` command on Python 3 (#70)
-- [add] Support ``-v`` / ``--version`` argument
 
 v0.1.3 (2016-01-06)
 
