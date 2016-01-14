@@ -33,3 +33,7 @@ Brendan Shillingford (@bshillingford)
 
  - Persist readline history
  - Set terminal title to song status
+
+Kshitij Banerjee (@Kshitij-Banerjee)
+
+ - Log the currently playing song to a file
