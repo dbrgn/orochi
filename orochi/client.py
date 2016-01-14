@@ -23,6 +23,12 @@ from . import meta
 
 PY3 = sys.version_info > (3,)
 
+try:
+    unicode = unicode
+except NameError:
+    # Python 3+
+    unicode = str
+
 # Tuple containing prefix, main text and suffix for command line prompt
 DEFAULT_PROMPT = ('(', '8tracks', ')> ')
 
@@ -636,6 +642,16 @@ class PlayCommand(cmd.Cmd, object):
         except TerminatedError:
             pass  # We wanted to stop the process anyways.
 
+        # Remove current song file if necessary
+        if self._log_current_song is True:
+            cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
+            current_song_file = os.path.join(cachedir, 'current_song.txt')
+            try:
+                os.remove(current_song_file)
+            except Exception as e:
+                print('*** Could not remove current_song.txt file: %s', e)
+                pass
+
         # Return to main loop
         return True
 
@@ -709,7 +725,7 @@ class PlayCommand(cmd.Cmd, object):
             cachedir = get_orochi_xdg_dir('XDG_CACHE_HOME', '.cache')
             filename = os.path.join(cachedir, 'current_song.txt')
             track_attributes = (track_name, track_performer, track_album, track_year)
-            track_attributes = ['' if v is None else v for v in track_attributes]
+            track_attributes = ['' if v is None else unicode(v) for v in track_attributes]
             with open(filename, 'wb') as songfile:
                 songfile.write('\n'.join(track_attributes).encode('utf-8'))
 
