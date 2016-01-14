@@ -710,8 +710,8 @@ class PlayCommand(cmd.Cmd, object):
             filename = os.path.join(cachedir, 'current_song.txt')
             track_attributes = (track_name, track_performer, track_album, track_year)
             track_attributes = ['' if v is None else v for v in track_attributes]
-            with open(filename, 'w') as songfile:
-                songfile.write(u'\n'.join(track_attributes).encode('utf-8').strip())
+            with open(filename, 'wb') as songfile:
+                songfile.write('\n'.join(track_attributes).strip().encode('utf-8'))
 
         # Set terminal title to song info
         if self._terminal_title is True:
