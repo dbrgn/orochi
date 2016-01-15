@@ -1,6 +1,6 @@
 """This module contains metadata about the project."""
 title = 'orochi'
-version = '0.1.4-dev'
+version = '0.2.0'
 description = 'A command line client for 8tracks.com.'
 author = 'Danilo Bargen'
 author_email = 'gezuru@gmail.com'

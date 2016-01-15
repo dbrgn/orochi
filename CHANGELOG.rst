@@ -8,12 +8,16 @@ Possible log types are ``[add]``, ``[bug]``, ``[change]`` and ``[info]``.
 
 UNRELEASED
 
-- [add] Persist readline history
-- [add] Set terminal title to song status
+- ...
+
+v0.2.0 (2016-01-15)
+
+- [add] Persist readline history (#58)
+- [add] Set terminal title to song status (#58)
+- [add] Log currently playing song to a file (#72)
 - [add] Support ``-v`` / ``--version`` argument
-- [add] Log currently played song to a file (#72)
-- [bug] Fixed bug that occurs if a track doesn't have an artist specified (#68)
-- [bug] Fixed ``search_tags`` command on Python 3 (#70)
+- [bug] Fix crash that occurs if a track doesn't have an artist specified (#68)
+- [bug] Fix ``search_tags`` command on Python 3 (#70)
 
 v0.1.3 (2016-01-06)
 
