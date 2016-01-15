@@ -104,6 +104,9 @@ Available commands (main menu)::
           Set number of results per page showed.
         - terminal_title yes|no (yes by default)
           Toggle setting terminal title to song status.
+        - log_current_song yes|no (no by default)
+          Toggle whether to log current song information
+          to file `~/.cache/orochi/current_song.txt`
         To get help for each setting, press Enter with no <param>.
     play:
         Syntax: play <mix>
